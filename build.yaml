@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      auto_route_generator:auto_route_generator:
+        enabled: false
+      auto_route_generator:auto_router_generator:
+        enabled: false
