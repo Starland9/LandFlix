@@ -9,30 +9,32 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i6;
-import 'package:flutter/foundation.dart' as _i7;
+import 'package:auto_route/auto_route.dart' as _i7;
+import 'package:flutter/foundation.dart' as _i8;
 import 'package:french_stream_downloader/src/logic/models/search_result.dart'
-    as _i8;
+    as _i9;
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart'
     as _i1;
-import 'package:french_stream_downloader/src/screens/result/search_result_screen.dart'
+import 'package:french_stream_downloader/src/screens/main_wrapper/main_wrapper_screen.dart'
     as _i2;
-import 'package:french_stream_downloader/src/screens/result/uqvideos_result_screen.dart'
-    as _i4;
-import 'package:french_stream_downloader/src/screens/splash/splash_screen.dart'
+import 'package:french_stream_downloader/src/screens/result/search_result_screen.dart'
     as _i3;
-import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart'
+import 'package:french_stream_downloader/src/screens/result/uqvideos_result_screen.dart'
     as _i5;
+import 'package:french_stream_downloader/src/screens/splash/splash_screen.dart'
+    as _i4;
+import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart'
+    as _i6;
 
 /// generated route for
 /// [_i1.HomeScreen]
-class HomeRoute extends _i6.PageRouteInfo<void> {
-  const HomeRoute({List<_i6.PageRouteInfo>? children})
+class HomeRoute extends _i7.PageRouteInfo<void> {
+  const HomeRoute({List<_i7.PageRouteInfo>? children})
     : super(HomeRoute.name, initialChildren: children);
 
   static const String name = 'HomeRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i7.PageInfo page = _i7.PageInfo(
     name,
     builder: (data) {
       return const _i1.HomeScreen();
@@ -41,12 +43,28 @@ class HomeRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i2.SearchResultScreen]
-class SearchResultRoute extends _i6.PageRouteInfo<SearchResultRouteArgs> {
+/// [_i2.MainWrapperScreen]
+class MainWrapperRoute extends _i7.PageRouteInfo<void> {
+  const MainWrapperRoute({List<_i7.PageRouteInfo>? children})
+    : super(MainWrapperRoute.name, initialChildren: children);
+
+  static const String name = 'MainWrapperRoute';
+
+  static _i7.PageInfo page = _i7.PageInfo(
+    name,
+    builder: (data) {
+      return const _i2.MainWrapperScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i3.SearchResultScreen]
+class SearchResultRoute extends _i7.PageRouteInfo<SearchResultRouteArgs> {
   SearchResultRoute({
-    _i7.Key? key,
+    _i8.Key? key,
     required String query,
-    List<_i6.PageRouteInfo>? children,
+    List<_i7.PageRouteInfo>? children,
   }) : super(
          SearchResultRoute.name,
          args: SearchResultRouteArgs(key: key, query: query),
@@ -55,11 +73,11 @@ class SearchResultRoute extends _i6.PageRouteInfo<SearchResultRouteArgs> {
 
   static const String name = 'SearchResultRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i7.PageInfo page = _i7.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SearchResultRouteArgs>();
-      return _i2.SearchResultScreen(key: args.key, query: args.query);
+      return _i3.SearchResultScreen(key: args.key, query: args.query);
     },
   );
 }
@@ -67,7 +85,7 @@ class SearchResultRoute extends _i6.PageRouteInfo<SearchResultRouteArgs> {
 class SearchResultRouteArgs {
   const SearchResultRouteArgs({this.key, required this.query});
 
-  final _i7.Key? key;
+  final _i8.Key? key;
 
   final String query;
 
@@ -88,28 +106,28 @@ class SearchResultRouteArgs {
 }
 
 /// generated route for
-/// [_i3.SplashScreen]
-class SplashRoute extends _i6.PageRouteInfo<void> {
-  const SplashRoute({List<_i6.PageRouteInfo>? children})
+/// [_i4.SplashScreen]
+class SplashRoute extends _i7.PageRouteInfo<void> {
+  const SplashRoute({List<_i7.PageRouteInfo>? children})
     : super(SplashRoute.name, initialChildren: children);
 
   static const String name = 'SplashRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i7.PageInfo page = _i7.PageInfo(
     name,
     builder: (data) {
-      return const _i3.SplashScreen();
+      return const _i4.SplashScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.UqvideosResultScreen]
-class UqvideosResultRoute extends _i6.PageRouteInfo<UqvideosResultRouteArgs> {
+/// [_i5.UqvideosResultScreen]
+class UqvideosResultRoute extends _i7.PageRouteInfo<UqvideosResultRouteArgs> {
   UqvideosResultRoute({
-    _i7.Key? key,
-    required _i8.SearchResult searchResult,
-    List<_i6.PageRouteInfo>? children,
+    _i8.Key? key,
+    required _i9.SearchResult searchResult,
+    List<_i7.PageRouteInfo>? children,
   }) : super(
          UqvideosResultRoute.name,
          args: UqvideosResultRouteArgs(key: key, searchResult: searchResult),
@@ -118,11 +136,11 @@ class UqvideosResultRoute extends _i6.PageRouteInfo<UqvideosResultRouteArgs> {
 
   static const String name = 'UqvideosResultRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i7.PageInfo page = _i7.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<UqvideosResultRouteArgs>();
-      return _i4.UqvideosResultScreen(
+      return _i5.UqvideosResultScreen(
         key: args.key,
         searchResult: args.searchResult,
       );
@@ -133,9 +151,9 @@ class UqvideosResultRoute extends _i6.PageRouteInfo<UqvideosResultRouteArgs> {
 class UqvideosResultRouteArgs {
   const UqvideosResultRouteArgs({this.key, required this.searchResult});
 
-  final _i7.Key? key;
+  final _i8.Key? key;
 
-  final _i8.SearchResult searchResult;
+  final _i9.SearchResult searchResult;
 
   @override
   String toString() {
@@ -154,17 +172,17 @@ class UqvideosResultRouteArgs {
 }
 
 /// generated route for
-/// [_i5.WishlistScreen]
-class WishlistRoute extends _i6.PageRouteInfo<void> {
-  const WishlistRoute({List<_i6.PageRouteInfo>? children})
+/// [_i6.WishlistScreen]
+class WishlistRoute extends _i7.PageRouteInfo<void> {
+  const WishlistRoute({List<_i7.PageRouteInfo>? children})
     : super(WishlistRoute.name, initialChildren: children);
 
   static const String name = 'WishlistRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i7.PageInfo page = _i7.PageInfo(
     name,
     builder: (data) {
-      return const _i5.WishlistScreen();
+      return const _i6.WishlistScreen();
     },
   );
 }

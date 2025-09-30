@@ -9,10 +9,10 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     AutoRoute(page: SplashRoute.page, initial: true),
+    AutoRoute(page: MainWrapperRoute.page),
     AutoRoute(page: HomeRoute.page),
     AutoRoute(page: WishlistRoute.page),
     AutoRoute(page: SearchResultRoute.page),
     AutoRoute(page: UqvideosResultRoute.page),
-
   ];
 }
