@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LandFlix - Votre Passerelle vers l'Univers du Streaming</title>
+    <meta name="description"
+        content="Découvrez et téléchargez vos films et séries préférés avec LandFlix. Une expérience de streaming moderne et intuitive.">
+    <meta name="keywords" content="streaming, films, séries, téléchargement, LandFlix">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="LandFlix - Votre Passerelle vers l'Univers du Streaming">
+    <meta property="og:description" content="Découvrez et téléchargez vos films et séries préférés avec LandFlix.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://landflix.app">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/sections.css">
+</head>
+
+<body>
+    <!-- Header Navigation -->
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <span class="text-gradient">LandFlix</span>
+                </a>
+
+                <ul class="nav-links">
+                    <li><a href="#accueil">Accueil</a></li>
+                    <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+                    <li><a href="#apercu">Aperçu</a></li>
+                    <li><a href="#telecharger">Télécharger</a></li>
+                </ul>
+
+                <button class="mobile-menu-btn" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero section" id="accueil">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text fade-in">
+                    <h1>
+                        Votre <span class="text-gradient">Passerelle</span><br>
+                        vers l'Univers du <span class="text-gradient">Streaming</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Découvrez et téléchargez vos films et séries préférés avec LandFlix.
+                        Une expérience moderne, intuitive et élégante pour tous vos contenus favoris.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#telecharger" class="btn btn-primary btn-large">
+                            <i class="fas fa-download"></i>
+                            Télécharger Maintenant
+                        </a>
+                        <a href="#apercu" class="btn btn-secondary btn-large">
+                            <i class="fas fa-play-circle"></i>
+                            Voir en Action
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="badge">
+                            <i class="fas fa-star"></i>
+                            Application Premium Gratuite
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual slide-in-right">
+                    <div class="phone-mockup animate-float">
+                        <div class="phone-screen">
+                            <!-- Simulation d'écran d'app -->
+                            <div
+                                style="padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <div
+                                    style="width: 80px; height: 80px; background: var(--primary-gradient); border-radius: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-play" style="color: white; font-size: 24px;"></i>
+                                </div>
+                                <h3 style="color: white; margin-bottom: 10px; font-size: 18px;">LandFlix</h3>
+                                <p style="color: var(--text-secondary); text-align: center; font-size: 14px;">Recherchez
+                                    vos contenus favoris</p>
+                                <div
+                                    style="width: 100%; height: 40px; background: var(--dark-surface-variant); border-radius: 12px; margin-top: 20px; display: flex; align-items: center; padding: 0 12px;">
+                                    <i class="fas fa-search"
+                                        style="color: var(--primary-purple); margin-right: 10px;"></i>
+                                    <span style="color: var(--text-tertiary); font-size: 14px;">Stranger
+                                        Things...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Éléments flottants -->
+                    <div class="floating-elements">
+                        <div class="floating-card">
+                            <i class="fas fa-film" style="color: var(--accent-orange); margin-bottom: 8px;"></i>
+                            <div style="font-size: 12px; color: white; font-weight: 600;">Films HD</div>
+                        </div>
+                        <div class="floating-card">
+                            <i class="fas fa-tv" style="color: var(--accent-teal); margin-bottom: 8px;"></i>
+                            <div style="font-size: 12px; color: white; font-weight: 600;">Séries TV</div>
+                        </div>
+                        <div class="floating-card">
+                            <i class="fas fa-download" style="color: var(--primary-purple); margin-bottom: 8px;"></i>
+                            <div style="font-size: 12px; color: white; font-weight: 600;">Téléchargement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features section" id="fonctionnalites">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Pourquoi Choisir <span class="text-gradient">LandFlix</span> ?</h2>
+                <p>Une expérience de streaming révolutionnaire avec des fonctionnalités avancées</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Recherche Intelligente</h3>
+                    <p>Trouvez instantanément vos films et séries préférés avec notre moteur de recherche avancé et
+                        suggestions intelligentes.</p>
+                </div>
+
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Interface Moderne</h3>
+                    <p>Profitez d'une interface élégante et intuitive, conçue avec les dernières tendances en design
+                        d'applications mobiles.</p>
+                </div>
+
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3>Téléchargement Rapide</h3>
+                    <p>Téléchargez vos contenus favoris rapidement et en toute sécurité avec notre système de gestion
+                        des téléchargements optimisé.</p>
+                </div>
+
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Liste Personnalisée</h3>
+                    <p>Créez votre liste de favoris personnalisée et retrouvez facilement vos contenus préférés à tout
+                        moment.</p>
+                </div>
+
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Multi-Plateforme</h3>
+                    <p>Disponible sur Android, iOS, Windows, macOS et Linux. Synchronisez vos préférences sur tous vos
+                        appareils.</p>
+                </div>
+
+                <div class="feature-card card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Sécurisé & Privé</h3>
+                    <p>Votre vie privée est notre priorité. Aucune donnée personnelle n'est collectée ou partagée avec
+                        des tiers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots section" id="apercu">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Découvrez <span class="text-gradient">LandFlix</span> en Images</h2>
+                <p>Explorez l'interface moderne et intuitive de notre application</p>
+            </div>
+
+            <div class="screenshots-carousel">
+                <div class="screenshot-item fade-in">
+                    <div
+                        style="width: 100%; height: 100%; background: var(--hero-gradient); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+                        <div
+                            style="width: 120px; height: 120px; background: var(--primary-gradient); border-radius: 30px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(139, 93, 255, 0.4);">
+                            <i class="fas fa-home" style="color: white; font-size: 48px;"></i>
+                        </div>
+                        <h3 style="color: white; margin-bottom: 12px; text-align: center;">Écran d'Accueil</h3>
+                        <p style="color: var(--text-secondary); text-align: center; font-size: 14px;">Interface moderne
+                            avec recherche intelligente</p>
+                    </div>
+                    <div class="screenshot-overlay">
+                        <h4>Accueil Moderne</h4>
+                        <p>Interface épurée avec recherche instantanée</p>
+                    </div>
+                </div>
+
+                <div class="screenshot-item fade-in">
+                    <div
+                        style="width: 100%; height: 100%; background: var(--hero-gradient); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+                        <div
+                            style="width: 120px; height: 120px; background: var(--primary-gradient); border-radius: 30px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(139, 93, 255, 0.4);">
+                            <i class="fas fa-th-large" style="color: white; font-size: 48px;"></i>
+                        </div>
+                        <h3 style="color: white; margin-bottom: 12px; text-align: center;">Résultats</h3>
+                        <p style="color: var(--text-secondary); text-align: center; font-size: 14px;">Grille élégante de
+                            résultats de recherche</p>
+                    </div>
+                    <div class="screenshot-overlay">
+                        <h4>Résultats Stylés</h4>
+                        <p>Cartes modernes avec animations fluides</p>
+                    </div>
+                </div>
+
+                <div class="screenshot-item fade-in">
+                    <div
+                        style="width: 100%; height: 100%; background: var(--hero-gradient); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+                        <div
+                            style="width: 120px; height: 120px; background: var(--primary-gradient); border-radius: 30px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(139, 93, 255, 0.4);">
+                            <i class="fas fa-download" style="color: white; font-size: 48px;"></i>
+                        </div>
+                        <h3 style="color: white; margin-bottom: 12px; text-align: center;">Téléchargements</h3>
+                        <p style="color: var(--text-secondary); text-align: center; font-size: 14px;">Gestionnaire de
+                            téléchargements avancé</p>
+                    </div>
+                    <div class="screenshot-overlay">
+                        <h4>Téléchargements</h4>
+                        <p>Gestion avancée avec suivi de progression</p>
+                    </div>
+                </div>
+
+                <div class="screenshot-item fade-in">
+                    <div
+                        style="width: 100%; height: 100%; background: var(--hero-gradient); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+                        <div
+                            style="width: 120px; height: 120px; background: var(--primary-gradient); border-radius: 30px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(139, 93, 255, 0.4);">
+                            <i class="fas fa-heart" style="color: white; font-size: 48px;"></i>
+                        </div>
+                        <h3 style="color: white; margin-bottom: 12px; text-align: center;">Ma Liste</h3>
+                        <p style="color: var(--text-secondary); text-align: center; font-size: 14px;">Vos contenus
+                            favoris organisés</p>
+                    </div>
+                    <div class="screenshot-overlay">
+                        <h4>Liste Personnelle</h4>
+                        <p>Organisez vos contenus préférés facilement</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download section" id="telecharger">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Téléchargez <span class="text-gradient">LandFlix</span> Maintenant</h2>
+                <p>Disponible gratuitement sur toutes les plateformes populaires</p>
+            </div>
+
+            <div class="download-options">
+                <a href="#" class="download-btn fade-in" data-platform="android">
+                    <div class="download-icon">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <div class="download-text">
+                        <span class="label">Disponible sur</span>
+                        <span class="title">Google Play</span>
+                    </div>
+                </a>
+
+                <a href="#" class="download-btn fade-in" data-platform="ios">
+                    <div class="download-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <div class="download-text">
+                        <span class="label">Télécharger sur</span>
+                        <span class="title">App Store</span>
+                    </div>
+                </a>
+
+                <a href="#" class="download-btn fade-in" data-platform="windows">
+                    <div class="download-icon">
+                        <i class="fab fa-windows"></i>
+                    </div>
+                    <div class="download-text">
+                        <span class="label">Disponible pour</span>
+                        <span class="title">Windows</span>
+                    </div>
+                </a>
+
+                <a href="#" class="download-btn fade-in" data-platform="mac">
+                    <div class="download-icon">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <div class="download-text">
+                        <span class="label">Télécharger pour</span>
+                        <span class="title">macOS</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mt-5 fade-in">
+                <div class="badge">
+                    <i class="fas fa-check-circle"></i>
+                    100% Gratuit • Aucune Publicité • Open Source
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>LandFlix</h4>
+                    <p>Votre passerelle vers l'univers du streaming. Découvrez et téléchargez vos contenus préférés avec
+                        style.</p>
+                    <div class="mt-2">
+                        <div class="badge">
+                            <i class="fas fa-code"></i>
+                            Made with ❤️ by Landry
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Application</h4>
+                    <ul class="footer-links">
+                        <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+                        <li><a href="#apercu">Captures d'écran</a></li>
+                        <li><a href="#telecharger">Télécharger</a></li>
+                        <li><a href="#">Notes de version</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Guide d'utilisation</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Signaler un bug</a></li>
+                        <li><a href="#">Nous contacter</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                        <li><a href="#">Licences</a></li>
+                        <li><a href="#">Open Source</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 LandFlix. Tous droits réservés. • Application développée avec Flutter</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>

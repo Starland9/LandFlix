@@ -43,6 +43,8 @@ dependencies:
   url_launcher: ^6.3.1
   path_provider: ^2.0.15
   shimmer: ^3.0.0
+  uqload_downloader_dart:
+    path: /home/landry/Dev/Python/uqload-downloader-python/uqload_downloader_dart
 
 dev_dependencies:
   flutter_test:
