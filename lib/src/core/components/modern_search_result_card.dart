@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
-import 'package:french_stream_downloader/src/logic/models/search_result.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/models/search_result.dart';
 
 class ModernSearchResultCard extends StatefulWidget {
   final SearchResult searchResult;
@@ -222,34 +222,39 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                widget.searchResult.title,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                              Flexible(
+                                child: Text(
+                                  widget.searchResult.title,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                        fontSize: 14,
+                                      ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
 
                               // Indicateur de qualité (si disponible)
                               Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                                      horizontal: 6,
+                                      vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
                                       gradient: AppColors.primaryGradient,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       "HD",
@@ -259,12 +264,12 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                           ?.copyWith(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
-                                            fontSize: 10,
+                                            fontSize: 9,
                                           ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
+                                  const SizedBox(width: 6),
+                                  Flexible(
                                     child: Text(
                                       "Disponible",
                                       style: Theme.of(context)
@@ -273,7 +278,9 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                           ?.copyWith(
                                             color: AppColors.success,
                                             fontWeight: FontWeight.w500,
+                                            fontSize: 10,
                                           ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
