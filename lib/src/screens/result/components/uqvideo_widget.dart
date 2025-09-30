@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:french_stream_downloader/src/core/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/models/uqvideo.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -22,36 +24,247 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      tileColor: Colors.white,
-      title: Text(
-        widget.uqvideo.title,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primaryPurple.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      subtitle: Text(
-        widget.uqvideo.sizeInBytes / 1024 / 1024 > 1
-            ? "${widget.uqvideo.sizeInBytes / 1024 / 1024} MB"
-            : "${widget.uqvideo.sizeInBytes / 1024} KB".toUpperCase(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: _isDownloading
-          ? Stack(
-              alignment: Alignment.center,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _isDownloading ? null : () => _download(context),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                CircularProgressIndicator(value: _progress),
-                IconButton(
-                  onPressed: _cancelDownload,
-                  icon: const Icon(Icons.close),
+                // Icône de fichier vidéo
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryPurple.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
+
+                const SizedBox(width: 16),
+
+                // Informations de la vidéo
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.uqvideo.title,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+
+                      Row(
+                        children: [
+                          // Badge de taille
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentTeal.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.accentTeal.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Text(
+                              _formatFileSize(widget.uqvideo.sizeInBytes),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.accentTeal,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          // Badge de qualité
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "MP4",
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Barre de progression si en téléchargement
+                      if (_isDownloading) ...[
+                        const SizedBox(height: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Téléchargement en cours...",
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                ),
+                                Text(
+                                  "${(_progress * 100).toInt()}%",
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppColors.primaryPurple,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: _progress,
+                                backgroundColor: AppColors.darkSurfaceVariant,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  AppColors.primaryPurple,
+                                ),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Bouton d'action
+                _buildActionButton(),
               ],
-            )
-          : IconButton.outlined(
-              onPressed: () => _download(context),
-              icon: const Icon(Icons.download),
             ),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildActionButton() {
+    if (_isDownloading) {
+      return Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColors.error.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.error.withOpacity(0.3)),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: _cancelDownload,
+            child: const Icon(
+              Icons.close_rounded,
+              color: AppColors.error,
+              size: 24,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryPurple.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _download(context),
+          child: const Icon(
+            Icons.download_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes >= 1024 * 1024 * 1024) {
+      return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB";
+    } else if (bytes >= 1024 * 1024) {
+      return "${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB";
+    } else if (bytes >= 1024) {
+      return "${(bytes / 1024).toStringAsFixed(1)} KB";
+    } else {
+      return "$bytes B";
+    }
   }
 
   void _cancelDownload() {
@@ -111,21 +324,30 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
       await file.writeAsBytes(response.data);
 
       if (!_cancelToken.isCancelled && context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Download complete: $filePath')));
+        ModernToast.show(
+          context: context,
+          message: "Téléchargement terminé avec succès !",
+          type: ToastType.success,
+          title: "✅ Succès",
+        );
       }
     } on DioException catch (error) {
       if (!CancelToken.isCancel(error) && context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Download failed: $error')));
+        ModernToast.show(
+          context: context,
+          message: "Erreur lors du téléchargement: ${error.message}",
+          type: ToastType.error,
+          title: "❌ Erreur",
+        );
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Download failed: $error')));
+        ModernToast.show(
+          context: context,
+          message: "Erreur inattendue: $error",
+          type: ToastType.error,
+          title: "❌ Erreur",
+        );
       }
     } finally {
       if (mounted) {
