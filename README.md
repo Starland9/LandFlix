@@ -1,147 +1,214 @@
-# LandFlix
+# LandFlix 🎬
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.8.1-02569B?logo=flutter)](https://flutter.dev)
-[![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-blue.svg)](https://flutter.dev)
+[![License](https://img.shields.io/badge/License-Privée-red.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Plateformes-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-blue.svg)](https://flutter.dev)
 
-A powerful cross-platform application for searching and downloading French streaming content. Built with Flutter for seamless performance across mobile, web, and desktop platforms.
+**Votre passerelle vers l'univers du streaming français**
 
-## ✨ Features
+LandFlix est une application multiplateforme moderne et puissante pour rechercher, découvrir et télécharger vos films et séries préférés. Développée avec Flutter, elle offre une expérience fluide et élégante sur mobile, web et bureau.
 
-- 🔍 **Smart Search**: Search for movies and series with intelligent query handling
-- 📱 **Cross-Platform**: Runs on Android, iOS, Web, Windows, Linux, and macOS
-- 🎬 **Video Management**: Browse and manage video content efficiently
-- 💾 **Wishlist**: Save your favorite content for later viewing
-- 🎨 **Modern UI**: Beautiful, responsive interface with Material Design 3
-- 🌐 **Multi-Language Support**: Optimized for French content
-- ⚡ **Fast Performance**: Built with efficient state management using BLoC pattern
+## ✨ Fonctionnalités
 
-## 📸 Screenshots
+### 🎯 Principales Fonctionnalités
+- 🔍 **Recherche Intelligente** : Recherchez vos films et séries avec un système de requêtes optimisé
+- 📥 **Téléchargement Rapide** : Téléchargez vos contenus favoris avec le système UQLoad intégré
+- 📁 **Gestionnaire de Téléchargements** : Interface dédiée pour gérer tous vos téléchargements
+- 💾 **Liste Personnalisée** : Sauvegardez vos contenus préférés pour un visionnage ultérieur
+- 🎨 **Interface Moderne** : Design élégant et réactif avec Material Design 3
+- 📱 **Multiplateforme** : Compatible Android, iOS, Web, Windows, Linux et macOS
+- ⚡ **Performance Optimale** : Architecture BLoC pour une gestion d'état efficace
 
-<!-- Add screenshots here when available -->
-*Screenshots coming soon*
+### 🚀 Nouvelles Fonctionnalités v1.0+
+- ✅ **Intégration UQLoad** : Téléchargement optimisé depuis UQLoad avec suivi de progression
+- ✅ **Gestionnaire Complet** : Écran dédié pour visualiser et gérer tous vos téléchargements
+- ✅ **Persistance Locale** : Sauvegarde automatique de l'historique avec SharedPreferences
+- ✅ **Marquage Visuel** : Badges et indicateurs sur les médias déjà téléchargés
+- ✅ **Gestion Automatique** : Vérification de l'intégrité des fichiers et nettoyage intelligent
 
-## 🚀 Getting Started
+## 📸 Captures d'Écran
 
-### Prerequisites
+<!-- Captures d'écran à ajouter -->
+*Captures d'écran à venir*
 
-Before you begin, ensure you have the following installed:
+## 🚀 Démarrage Rapide
 
-- **Flutter SDK**: Version 3.8.1 or higher ([Installation Guide](https://docs.flutter.dev/get-started/install))
-- **Dart SDK**: Version 3.8.1 or higher (included with Flutter)
-- **Git**: For version control
-- **IDE**: VS Code or Android Studio with Flutter plugins
+### Prérequis
 
-#### Platform-Specific Requirements
+Avant de commencer, assurez-vous d'avoir installé :
 
-- **Android**: Android Studio, Android SDK (API level 21+)
-- **iOS**: Xcode 14+ (macOS only)
-- **Windows**: Visual Studio 2022 with C++ Desktop Development
-- **Linux**: GTK+ 3.0 development libraries
-- **macOS**: Xcode Command Line Tools
+- **Flutter SDK** : Version 3.8.1 ou supérieure ([Guide d'installation](https://docs.flutter.dev/get-started/install))
+- **Dart SDK** : Version 3.8.1 ou supérieure (inclus avec Flutter)
+- **Git** : Pour le contrôle de version
+- **IDE** : VS Code ou Android Studio avec les plugins Flutter
+
+#### Prérequis Spécifiques aux Plateformes
+
+- **Android** : Android Studio, Android SDK (API niveau 21+)
+- **iOS** : Xcode 14+ (macOS uniquement)
+- **Windows** : Visual Studio 2022 avec outils de développement C++ pour le bureau
+- **Linux** : Bibliothèques de développement GTK+ 3.0
+- **macOS** : Xcode Command Line Tools
 
 ### Installation
 
-1. **Clone the repository**
+1. **Cloner le dépôt**
    ```bash
-   git clone https://github.com/Starland9/french_stream_downloader_mobile_app.git
-   cd french_stream_downloader_mobile_app
+   git clone https://github.com/Starland9/LandFlix.git
+   cd LandFlix
    ```
 
-2. **Install dependencies**
+2. **Installer les dépendances**
    ```bash
    flutter pub get
    ```
 
-3. **Generate launcher icons**
+3. **Configurer UQLoad Downloader** (si nécessaire)
+   
+   Le projet utilise `uqload_downloader_dart` en local. Si vous devez le configurer :
+   ```yaml
+   # Dans pubspec.yaml, ajustez le chemin si nécessaire
+   uqload_downloader_dart:
+     path: /chemin/vers/uqload_downloader_dart
+   ```
+
+4. **Générer les icônes de l'application**
    ```bash
    dart pub global run flutter_launcher_icons:generate
    ```
 
-4. **Generate router files** (if needed)
+5. **Générer les fichiers de routage** (si nécessaire)
    ```bash
    dart run build_runner build --delete-conflicting-outputs
    ```
 
-5. **Run the app**
+6. **Lancer l'application**
    ```bash
-   # For mobile (Android/iOS)
+   # Pour mobile (Android/iOS)
    flutter run
    
-   # For web
+   # Pour le web
    flutter run -d chrome
    
-   # For desktop
-   flutter run -d windows  # or linux, macos
+   # Pour bureau
+   flutter run -d windows  # ou linux, macos
    ```
 
-## 🏗️ Project Structure
+## 🏗️ Structure du Projet
 
 ```
 lib/
-├── main.dart                 # Application entry point
+├── main.dart                 # Point d'entrée de l'application
 └── src/
-    ├── app.dart             # Main app widget
-    ├── core/                # Core functionality
-    │   ├── routing/        # Auto-route navigation
-    │   ├── themes/         # App themes and colors
-    │   └── env/            # Environment configuration
-    ├── logic/              # Business logic
-    │   ├── cubits/        # State management (BLoC)
-    │   ├── models/        # Data models
-    │   ├── repos/         # Repository pattern
-    │   └── services/      # API services
-    └── screens/            # UI screens
-        ├── home/          # Home/search screen
-        ├── result/        # Search results
-        ├── wishlist/      # Saved content
-        └── splash/        # Splash screen
+    ├── app.dart             # Widget principal de l'application
+    ├── core/                # Fonctionnalités de base
+    │   ├── routing/        # Navigation avec Auto-route
+    │   ├── themes/         # Thèmes et couleurs de l'application
+    │   ├── components/     # Composants réutilisables (badges, cartes, etc.)
+    │   ├── env/            # Configuration d'environnement
+    │   └── services/       # Services (UQLoad, Download Manager, etc.)
+    ├── logic/              # Logique métier
+    │   ├── cubits/        # Gestion d'état avec BLoC/Cubit
+    │   ├── models/        # Modèles de données
+    │   ├── repos/         # Pattern Repository
+    │   └── services/      # Services API
+    └── screens/            # Écrans de l'interface utilisateur
+        ├── home/          # Écran d'accueil et recherche
+        ├── result/        # Résultats de recherche
+        ├── downloads/     # Gestionnaire de téléchargements
+        ├── wishlist/      # Liste de contenus sauvegardés
+        └── splash/        # Écran de démarrage
 ```
 
-## 🛠️ Technology Stack
+### 📁 Fichiers Importants
 
-### Core Technologies
-- **Flutter**: Cross-platform UI framework
-- **Dart**: Programming language
+#### Gestionnaire de Téléchargements
+- `lib/src/core/services/download_manager.dart` - Service principal de gestion des téléchargements
+- `lib/src/screens/downloads/downloads_screen.dart` - Interface du gestionnaire
+- `lib/src/core/components/downloaded_badge.dart` - Badges visuels pour les médias téléchargés
 
-### Key Packages
-- **State Management**: `flutter_bloc` (9.1.1), `bloc` (9.0.0)
-- **Navigation**: `auto_route` (10.1.0+1)
-- **Network**: `dio` (5.8.0+1)
-- **Storage**: `path_provider` (2.0.15)
-- **UI/UX**: `google_fonts` (6.2.1), Material Design 3
-- **Utilities**: `equatable` (2.0.7), `url_launcher` (6.3.1)
+#### Intégration UQLoad
+- `lib/src/core/services/uqload_download_service.dart` - Service de téléchargement UQLoad
+- `lib/src/logic/cubits/download/` - Gestion d'état des téléchargements
 
-### Development Tools
-- **Code Generation**: `auto_route_generator`, `lean_builder`
-- **Linting**: `flutter_lints` (5.0.0)
-- **Assets**: `flutter_launcher_icons`
+### 📄 Documentation Complémentaire
 
-## 💻 Development
+Pour plus de détails sur les fonctionnalités spécifiques :
+- 📥 [DOWNLOAD_MANAGER.md](DOWNLOAD_MANAGER.md) - Documentation du gestionnaire de téléchargements
+- 🚀 [UQLOAD_INTEGRATION.md](UQLOAD_INTEGRATION.md) - Intégration UQLoad Downloader
+- 🎨 [UI_UX_IMPROVEMENTS.md](UI_UX_IMPROVEMENTS.md) - Améliorations de l'interface utilisateur
 
-### Code Generation
+## 🛠️ Stack Technologique
 
-This project uses code generation for routing and other features:
+### Technologies Principales
+- **Flutter** : Framework d'interface utilisateur multiplateforme
+- **Dart** : Langage de programmation (version 3.8.1+)
+
+### Packages Clés
+- **Gestion d'État** : `flutter_bloc` (9.1.1), `bloc` (9.0.0)
+- **Navigation** : `auto_route` (10.1.0+1)
+- **Réseau** : `dio` (5.8.0+1)
+- **Stockage** : `shared_preferences` (2.3.2), `path_provider` (2.0.15)
+- **Téléchargement** : `uqload_downloader_dart` (intégration locale)
+- **Interface** : `google_fonts` (6.2.1), `shimmer` (3.0.0), Material Design 3
+- **Utilitaires** : `equatable` (2.0.7), `url_launcher` (6.3.1)
+
+### Outils de Développement
+- **Génération de Code** : `auto_route_generator`, `lean_builder`
+- **Linting** : `flutter_lints` (5.0.0)
+- **Assets** : `flutter_launcher_icons`
+
+## 💻 Développement
+
+### Génération de Code
+
+Ce projet utilise la génération de code pour le routage et d'autres fonctionnalités :
 
 ```bash
-# Watch for changes and auto-generate
+# Observer les changements et générer automatiquement
 dart run build_runner watch
 
-# One-time generation
+# Génération ponctuelle
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-### Running Tests
+### Initialisation des Services
+
+Le gestionnaire de téléchargements doit être initialisé au démarrage de l'application :
+
+```dart
+// Dans main.dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialisation obligatoire du gestionnaire de téléchargements
+  await DownloadManager.instance.initialize();
+  
+  runApp(MyApp());
+}
+```
+
+### Exécution des Tests
 
 ```bash
-# Run all tests
+# Exécuter tous les tests
 flutter test
 
-# Run with coverage
+# Exécuter avec couverture
 flutter test --coverage
 ```
 
-### Building for Production
+### Analyse du Code
+
+```bash
+# Analyser le code avec le linter
+flutter analyze
+
+# Formater le code
+flutter format .
+```
+
+### Construction pour la Production
 
 ```bash
 # Android APK
@@ -168,66 +235,124 @@ flutter build macos --release
 
 ## 🔧 Configuration
 
-### App Icons
+### Icônes de l'Application
 
-The app uses custom launcher icons. To regenerate them:
+L'application utilise des icônes de lancement personnalisées. Pour les régénérer :
 
 ```bash
 dart pub global run flutter_launcher_icons:generate
 ```
 
-Icon configuration is in `flutter_launcher_icons.yaml`.
+La configuration des icônes se trouve dans `flutter_launcher_icons.yaml`.
 
-### Environment Variables
+### Variables d'Environnement
 
-Configure your environment settings in `lib/src/core/env/env.dart`.
+Configurez vos paramètres d'environnement dans `lib/src/core/env/env.dart`.
 
-## 📱 Supported Platforms
+### Configuration UQLoad
 
-- ✅ Android (API 21+)
-- ✅ iOS (12.0+)
-- ✅ Web (modern browsers)
-- ✅ Windows (Windows 10+)
-- ✅ Linux (GTK+ 3.0)
-- ✅ macOS (10.14+)
+Le téléchargeur UQLoad est configuré pour gérer automatiquement :
+- 📁 **Dossiers de téléchargement** : Créés automatiquement selon la plateforme
+- 📊 **Suivi de progression** : Mise à jour en temps réel
+- 💾 **Persistance** : Sauvegarde automatique de l'historique
+- 🏷️ **Marquage visuel** : Badges sur les médias téléchargés
 
-## 🤝 Contributing
+Pour plus de détails, consultez [UQLOAD_INTEGRATION.md](UQLOAD_INTEGRATION.md).
 
-Contributions are welcome! Please follow these steps:
+### Gestion des Téléchargements
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Le gestionnaire de téléchargements utilise `SharedPreferences` pour la persistance :
+- Historique complet des téléchargements
+- Vérification de l'intégrité des fichiers
+- Nettoyage automatique des fichiers supprimés
+- Statistiques en temps réel
 
-### Code Style
+Pour plus de détails, consultez [DOWNLOAD_MANAGER.md](DOWNLOAD_MANAGER.md).
 
-This project follows the official [Dart style guide](https://dart.dev/guides/language/effective-dart/style). Use the provided linter:
+## 📱 Plateformes Supportées
+
+- ✅ **Android** (API 21+)
+- ✅ **iOS** (12.0+)
+- ✅ **Web** (navigateurs modernes)
+- ✅ **Windows** (Windows 10+)
+- ✅ **Linux** (GTK+ 3.0)
+- ✅ **macOS** (10.14+)
+
+## 🎯 Fonctionnalités Avancées
+
+### 📥 Système de Téléchargement
+
+LandFlix intègre un système de téléchargement avancé avec :
+
+- **Téléchargement UQLoad** : Intégration complète avec UQLoad Downloader
+- **Suivi en temps réel** : Progression et statut des téléchargements
+- **Gestion intelligente** : Organisation automatique des fichiers
+- **Interface dédiée** : Écran de gestion des téléchargements avec statistiques
+- **Persistance** : Sauvegarde automatique de l'historique
+- **Marquage visuel** : Badges sur les médias déjà téléchargés
+
+### 💾 Gestionnaire de Téléchargements
+
+Accédez à tous vos téléchargements depuis le 3ᵉ onglet de la navigation :
+
+- 📊 **Statistiques** : Nombre total et espace utilisé
+- 🎬 **Aperçu** : Miniatures et informations détaillées
+- 📂 **Ouverture** : Lecture directe avec le lecteur système
+- 🗑️ **Gestion** : Suppression individuelle ou nettoyage groupé
+- ✅ **Vérification** : Contrôle automatique de l'intégrité des fichiers
+
+### 🎨 Interface Utilisateur Moderne
+
+- **Material Design 3** : Design moderne et élégant
+- **Animations fluides** : Transitions et effets visuels
+- **Mode sombre** : Interface optimisée pour un confort visuel
+- **Responsive** : Adaptation automatique à tous les écrans
+- **Accessibilité** : Support complet des fonctionnalités d'accessibilité
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Veuillez suivre ces étapes :
+
+1. Forkez le dépôt
+2. Créez une branche de fonctionnalité (`git checkout -b feature/NouvelleFonctionnalite`)
+3. Commitez vos changements (`git commit -m 'Ajout d'une nouvelle fonctionnalité'`)
+4. Poussez vers la branche (`git push origin feature/NouvelleFonctionnalite`)
+5. Ouvrez une Pull Request
+
+### Style de Code
+
+Ce projet suit le [guide de style officiel Dart](https://dart.dev/guides/language/effective-dart/style). Utilisez le linter fourni :
 
 ```bash
 flutter analyze
 ```
 
-## 📄 License
+## 📄 Licence
 
-This project is private and not published to pub.dev. All rights reserved.
+Ce projet est privé et n'est pas publié sur pub.dev. Tous droits réservés.
 
-## 👨‍💻 Author
+## 👨‍💻 Auteur
 
 **Starland9**
-- GitHub: [@Starland9](https://github.com/Starland9)
+- GitHub : [@Starland9](https://github.com/Starland9)
 
-## 🙏 Acknowledgments
+## 🙏 Remerciements
 
-- Flutter team for the amazing framework
-- The open-source community for the excellent packages
-- Contributors and testers
+- L'équipe Flutter pour leur incroyable framework
+- La communauté open-source pour les excellents packages
+- Les contributeurs et testeurs
 
 ## 📞 Support
 
-For support, please open an issue in the GitHub repository or contact the maintainers.
+Pour obtenir de l'aide, veuillez ouvrir une issue dans le dépôt GitHub ou contacter les mainteneurs.
+
+## 🌐 Liens Utiles
+
+- 🎬 [Page d'accueil LandFlix](landing/index.html) - Landing page marketing
+- 📥 [Documentation Download Manager](DOWNLOAD_MANAGER.md) - Gestionnaire de téléchargements
+- 🚀 [Documentation UQLoad](UQLOAD_INTEGRATION.md) - Intégration UQLoad
+- 🎨 [Améliorations UI/UX](UI_UX_IMPROVEMENTS.md) - Améliorations de l'interface
 
 ---
 
-Made with ❤️ using Flutter
+Fait avec ❤️ en utilisant Flutter | **LandFlix v1.0+** ✨
