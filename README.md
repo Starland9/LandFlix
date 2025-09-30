@@ -1,4 +1,4 @@
-# French Stream Downloader
+# LandFlix
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.8.1-02569B?logo=flutter)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
