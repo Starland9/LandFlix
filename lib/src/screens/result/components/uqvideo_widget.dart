@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:french_stream_downloader/src/core/components/downloaded_badge.dart';
 import 'package:french_stream_downloader/src/core/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/core/services/download_manager.dart';
 import 'package:french_stream_downloader/src/core/services/uqload_download_service.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/cubits/download/download_cubit.dart';
@@ -18,11 +20,19 @@ class UqvideoWidget extends StatefulWidget {
 class _UqvideoWidgetState extends State<UqvideoWidget> {
   late DownloadCubit _downloadCubit;
   bool _isDownloading = false;
+  bool _isAlreadyDownloaded = false;
 
   @override
   void initState() {
     super.initState();
     _downloadCubit = DownloadCubit();
+    _checkIfDownloaded();
+  }
+
+  void _checkIfDownloaded() {
+    _isAlreadyDownloaded = DownloadManager.instance.isDownloaded(
+      widget.uqvideo.htmlUrl,
+    );
   }
 
   @override
@@ -44,6 +54,7 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
           } else if (state is DownloadCompleted) {
             setState(() {
               _isDownloading = false;
+              _isAlreadyDownloaded = true; // Marquer comme téléchargé
             });
             ModernToast.show(
               context: context,
@@ -196,6 +207,12 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
                                       ),
                                 ),
                               ),
+
+                              // Badge "Téléchargé" si déjà téléchargé
+                              if (_isAlreadyDownloaded) ...[
+                                const SizedBox(width: 8),
+                                const DownloadedBadge(),
+                              ],
                             ],
                           ),
 

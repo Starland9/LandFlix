@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/components/ripple_floating_button.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart';
 
@@ -19,7 +20,11 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
   late PageController _pageController;
   late AnimationController _animationController;
 
-  final List<Widget> _screens = [const HomeScreen(), const WishlistScreen()];
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const WishlistScreen(),
+    const DownloadsScreen(),
+  ];
 
   final List<BottomNavItem> _navItems = [
     BottomNavItem(
@@ -31,6 +36,11 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
       icon: Icons.favorite_border_rounded,
       activeIcon: Icons.favorite_rounded,
       label: 'Ma Liste',
+    ),
+    BottomNavItem(
+      icon: Icons.download_outlined,
+      activeIcon: Icons.download_rounded,
+      label: 'Téléchargements',
     ),
   ];
 

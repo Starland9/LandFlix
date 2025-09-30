@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:french_stream_downloader/src/core/services/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
@@ -47,6 +48,15 @@ class UQLoadDownloadService {
       // Construire le chemin final du fichier
       final fileName = outputFile ?? sanitizeFileName(videoInfo.title);
       final finalPath = '$finalOutputDir/$fileName.mp4';
+
+      onStatus?.call("Enregistrement du téléchargement...");
+
+      // Enregistrer le téléchargement dans le gestionnaire
+      await DownloadManager.instance.recordDownload(
+        videoInfo: videoInfo,
+        filePath: finalPath,
+        originalUrl: url,
+      );
 
       onStatus?.call("Téléchargement terminé avec succès !");
 
