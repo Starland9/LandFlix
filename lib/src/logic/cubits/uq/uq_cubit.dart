@@ -12,22 +12,32 @@ class UqCubit extends Cubit<UqState> {
   UqCubit(this._uqRepo) : super(UqInitial());
 
   Future<void> search(String query) async {
+    if (isClosed) return;
     emit(UqLoading());
     try {
       final results = await _uqRepo.search(query);
-      emit(UqSearchLoaded(results));
+      if (!isClosed) {
+        emit(UqSearchLoaded(results));
+      }
     } catch (e) {
-      emit(UqError(e.toString()));
+      if (!isClosed) {
+        emit(UqError(e.toString()));
+      }
     }
   }
 
   Future<void> getUqVideos({required String htmlUrl}) async {
+    if (isClosed) return;
     emit(UqLoading());
     try {
       final results = await _uqRepo.getUqVideos(htmlUrl: htmlUrl);
-      emit(UqVideosLoaded(results));
+      if (!isClosed) {
+        emit(UqVideosLoaded(results));
+      }
     } catch (e) {
-      emit(UqError(e.toString()));
+      if (!isClosed) {
+        emit(UqError(e.toString()));
+      }
     }
   }
 }

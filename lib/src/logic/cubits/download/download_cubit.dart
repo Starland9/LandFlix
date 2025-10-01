@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+
+import '../../services/uqload_download_service.dart';
 
 part 'download_state.dart';
 
@@ -9,18 +10,28 @@ class DownloadCubit extends Cubit<DownloadState> {
 
   /// Prépare un téléchargement en récupérant les informations de la vidéo
   Future<void> prepareDownload(String url) async {
+    if (isClosed) return;
+
     if (!UQLoadDownloadService.isValidUQLoadUrl(url)) {
-      emit(const DownloadError("URL invalide pour UQLoad"));
+      if (!isClosed) {
+        emit(const DownloadError("URL invalide pour UQLoad"));
+      }
       return;
     }
 
-    emit(DownloadPreparing());
+    if (!isClosed) {
+      emit(DownloadPreparing());
+    }
 
     try {
       final details = await UQLoadDownloadService.prepareDownload(url);
-      emit(DownloadPrepared(details));
+      if (!isClosed) {
+        emit(DownloadPrepared(details));
+      }
     } catch (e) {
-      emit(DownloadError("Erreur lors de la préparation : $e"));
+      if (!isClosed) {
+        emit(DownloadError("Erreur lors de la préparation : $e"));
+      }
     }
   }
 
@@ -30,6 +41,8 @@ class DownloadCubit extends Cubit<DownloadState> {
     String? outputFile,
     String? outputDir,
   }) async {
+    if (isClosed) return;
+
     emit(const DownloadInProgress(0.0, "Initialisation..."));
 
     try {
@@ -38,7 +51,7 @@ class DownloadCubit extends Cubit<DownloadState> {
         outputFile: outputFile,
         outputDir: outputDir,
         onProgress: (downloaded, total) {
-          if (total > 0) {
+          if (!isClosed && total > 0) {
             final progress = downloaded / total;
             final percentString = "${(progress * 100).toInt()}%";
             emit(
@@ -50,37 +63,51 @@ class DownloadCubit extends Cubit<DownloadState> {
           }
         },
         onStatus: (message) {
-          if (state is DownloadInProgress) {
+          if (!isClosed && state is DownloadInProgress) {
             final currentState = state as DownloadInProgress;
             emit(DownloadInProgress(currentState.progress, message));
           }
         },
       );
 
-      emit(DownloadCompleted(filePath));
+      if (!isClosed) {
+        emit(DownloadCompleted(filePath));
+      }
     } catch (e) {
-      emit(DownloadError("Erreur lors du téléchargement : $e"));
+      if (!isClosed) {
+        emit(DownloadError("Erreur lors du téléchargement : $e"));
+      }
     }
   }
 
   /// Annule le téléchargement en cours
   void cancelDownload() {
-    emit(DownloadCancelled());
+    if (!isClosed) {
+      emit(DownloadCancelled());
+    }
   }
 
   /// Remet à zéro l'état du cubit
   void reset() {
-    emit(DownloadInitial());
+    if (!isClosed) {
+      emit(DownloadInitial());
+    }
   }
 
   /// Récupère les informations d'une vidéo sans la télécharger
   Future<void> getVideoInfo(String url) async {
+    if (isClosed) return;
+
     if (!UQLoadDownloadService.isValidUQLoadUrl(url)) {
-      emit(const DownloadError("URL invalide pour UQLoad"));
+      if (!isClosed) {
+        emit(const DownloadError("URL invalide pour UQLoad"));
+      }
       return;
     }
 
-    emit(DownloadPreparing());
+    if (!isClosed) {
+      emit(DownloadPreparing());
+    }
 
     try {
       final videoInfo = await UQLoadDownloadService.getVideoInfo(url);
@@ -95,11 +122,15 @@ class DownloadCubit extends Cubit<DownloadState> {
         downloadDir: downloadDir,
       );
 
-      emit(DownloadPrepared(details));
+      if (!isClosed) {
+        emit(DownloadPrepared(details));
+      }
     } catch (e) {
-      emit(
-        DownloadError("Erreur lors de la récupération des informations : $e"),
-      );
+      if (!isClosed) {
+        emit(
+          DownloadError("Erreur lors de la récupération des informations : $e"),
+        );
+      }
     }
   }
 }
