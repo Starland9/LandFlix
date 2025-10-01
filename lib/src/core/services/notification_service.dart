@@ -18,59 +18,66 @@ class NotificationService {
       'Notifications de progression des téléchargements';
 
   bool _isInitialized = false;
+  bool _permissionsHandled = false;
 
   /// Initialise le service de notification
-  Future<void> initialize() async {
-    if (_isInitialized) return;
+  Future<void> initialize({bool requestPermissions = true}) async {
+    if (!_isInitialized) {
+      // Configuration Android
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
 
-    // Demander les permissions
-    await _requestPermissions();
+      // Configuration iOS
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    // Configuration Android
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+      // Configuration Linux
+      const linuxSettings = LinuxInitializationSettings(
+        defaultActionName: 'Open notification',
+      );
 
-    // Configuration iOS
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+        linux: linuxSettings,
+      );
 
-    // Configuration Linux
-    const linuxSettings = LinuxInitializationSettings(
-      defaultActionName: 'Open notification',
-    );
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+      );
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-      linux: linuxSettings,
-    );
+      if (Platform.isAndroid) {
+        await _createNotificationChannel();
+      }
 
-    // Initialiser
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
-
-    // Créer le canal de notification pour Android
-    if (Platform.isAndroid) {
-      await _createNotificationChannel();
+      _isInitialized = true;
+      debugPrint('✅ NotificationService initialisé');
     }
 
-    _isInitialized = true;
-    debugPrint('✅ NotificationService initialisé');
+    if (requestPermissions && !_permissionsHandled) {
+      await _requestPermissions();
+    }
   }
 
   /// Demande les permissions nécessaires
   Future<void> _requestPermissions() async {
     if (Platform.isAndroid) {
-      final status = await Permission.notification.request();
-      if (status.isDenied) {
-        debugPrint('⚠️ Permission de notification refusée');
+      try {
+        final status = await Permission.notification.request();
+        if (status.isDenied) {
+          debugPrint('⚠️ Permission de notification refusée');
+        }
+        _permissionsHandled = true;
+      } catch (e) {
+        debugPrint('⚠️ Échec de la demande de permission de notification: $e');
       }
+    } else {
+      _permissionsHandled = true;
     }
   }
 
@@ -98,7 +105,7 @@ class NotificationService {
     required String title,
     required String fileName,
   }) async {
-    if (!_isInitialized) await initialize();
+    await initialize(requestPermissions: false);
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,
@@ -142,7 +149,7 @@ class NotificationService {
     required double progress,
     String? status,
   }) async {
-    if (!_isInitialized) await initialize();
+    await initialize(requestPermissions: false);
 
     final progressPercent = (progress * 100).round();
 
@@ -189,7 +196,7 @@ class NotificationService {
     required String fileName,
     required String filePath,
   }) async {
-    if (!_isInitialized) await initialize();
+    await initialize(requestPermissions: false);
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,
@@ -230,7 +237,7 @@ class NotificationService {
     required String fileName,
     required String error,
   }) async {
-    if (!_isInitialized) await initialize();
+    await initialize(requestPermissions: false);
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,

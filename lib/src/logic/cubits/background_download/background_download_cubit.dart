@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -11,6 +13,7 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
 
   final BackgroundDownloadService _backgroundService =
       BackgroundDownloadService();
+  StreamSubscription<BackgroundDownloadSnapshot>? _stateSubscription;
 
   /// Initialise le service de téléchargement en arrière-plan
   Future<void> initialize() async {
@@ -19,6 +22,17 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
     try {
       emit(const BackgroundDownloadLoading());
       await _backgroundService.initialize();
+
+      _stateSubscription ??= _backgroundService.stateStream.listen((snapshot) {
+        if (!isClosed) {
+          emit(
+            BackgroundDownloadUpdated(
+              queuedDownloads: snapshot.queuedDownloads,
+              activeDownloads: snapshot.activeDownloads,
+            ),
+          );
+        }
+      });
 
       // Charger l'état actuel
       await _loadCurrentState();
@@ -143,5 +157,11 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
   /// Récupère le nombre total de téléchargements en queue
   int getQueuedDownloadsCount() {
     return _backgroundService.getQueuedDownloads().length;
+  }
+
+  @override
+  Future<void> close() {
+    _stateSubscription?.cancel();
+    return super.close();
   }
 }

@@ -13,7 +13,7 @@ void main() async {
 
   // Initialiser les services
   await DownloadManager.instance.initialize();
-  await BackgroundDownloadService().initialize();
+  await BackgroundDownloadService().initialize(requestPermissions: false);
 
   runApp(RepositoryProvider(create: (context) => UqRepo(dio), child: MyApp()));
 }

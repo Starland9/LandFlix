@@ -85,6 +85,12 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
             state is BackgroundDownloadUpdated &&
             state.isDownloading(widget.url);
 
+        double? progress;
+        if (state is BackgroundDownloadUpdated && isDownloading) {
+          final downloadId = 'download_${widget.url.hashCode.abs()}';
+          progress = state.activeDownloads[downloadId]?.progress ?? 0.0;
+        }
+
         return ScaleTransition(
           scale: _pulseAnimation,
           child: Material(
@@ -143,10 +149,28 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
                             ),
                           ),
                         )
-                      : Icon(
-                          isDownloading
-                              ? Icons.cloud_download_rounded
-                              : Icons.download_for_offline_rounded,
+                      : isDownloading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value:
+                                (progress != null &&
+                                    progress > 0 &&
+                                    progress < 1)
+                                ? progress.clamp(0.0, 1.0)
+                                : null,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.download_for_offline_rounded,
                           size: 20,
                           color: Colors.white,
                         ),

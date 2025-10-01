@@ -60,6 +60,14 @@ class _BackgroundDownloadIndicatorState
 
         final totalDownloads = state.totalDownloads;
         final activeDownloads = state.activeDownloads.length;
+        double averageProgress = 0;
+        if (activeDownloads > 0) {
+          final totalProgress = state.activeDownloads.values.fold<double>(
+            0,
+            (sum, item) => sum + item.progress,
+          );
+          averageProgress = totalProgress / activeDownloads;
+        }
 
         if (totalDownloads == 0) {
           return const SizedBox.shrink();
@@ -122,14 +130,18 @@ class _BackgroundDownloadIndicatorState
                     ),
                     if (activeDownloads > 0) ...[
                       const SizedBox(width: 4),
-                      const SizedBox(
+                      SizedBox(
                         width: 12,
                         height: 12,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
+                          value: averageProgress > 0 && averageProgress < 1
+                              ? averageProgress
+                              : null,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
                             Colors.white,
                           ),
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
                         ),
                       ),
                     ],
