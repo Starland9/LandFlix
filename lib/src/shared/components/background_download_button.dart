@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/themes/colors.dart';
 import '../../logic/cubits/background_download/background_download_cubit.dart';
 import '../../shared/components/modern_toast.dart';
-import '../../core/themes/colors.dart';
 
 /// Bouton pour démarrer un téléchargement en arrière-plan
 class BackgroundDownloadButton extends StatefulWidget {
@@ -23,7 +23,8 @@ class BackgroundDownloadButton extends StatefulWidget {
   });
 
   @override
-  State<BackgroundDownloadButton> createState() => _BackgroundDownloadButtonState();
+  State<BackgroundDownloadButton> createState() =>
+      _BackgroundDownloadButtonState();
 }
 
 class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
@@ -61,7 +62,7 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
         if (state is BackgroundDownloadStarted) {
           _pulseController.repeat(reverse: true);
           widget.onDownloadStarted?.call();
-          
+
           ModernToast.show(
             context: context,
             message: 'Téléchargement démarré en arrière-plan',
@@ -70,7 +71,7 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
           );
         } else if (state is BackgroundDownloadError) {
           _pulseController.stop();
-          
+
           ModernToast.show(
             context: context,
             message: state.message,
@@ -80,7 +81,8 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
         }
       },
       builder: (context, state) {
-        final isDownloading = state is BackgroundDownloadUpdated &&
+        final isDownloading =
+            state is BackgroundDownloadUpdated &&
             state.isDownloading(widget.url);
 
         return ScaleTransition(
@@ -88,35 +90,43 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: isDownloading || _isStarting ? null : _startBackgroundDownload,
+              onTap: isDownloading || _isStarting
+                  ? null
+                  : _startBackgroundDownload,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: isDownloading
                       ? LinearGradient(
                           colors: [
-                            Colors.green.withOpacity(0.8),
-                            Colors.green.withOpacity(0.6),
+                            Colors.green.withValues(alpha: 0.8),
+                            Colors.green.withValues(alpha: 0.6),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
                       : _isStarting
-                          ? LinearGradient(
-                              colors: [
-                                AppColors.primaryPurple.withOpacity(0.8),
-                                AppColors.primaryPurple.withOpacity(0.6),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : AppColors.primaryGradient,
+                      ? LinearGradient(
+                          colors: [
+                            AppColors.primaryPurple.withValues(alpha: 0.8),
+                            AppColors.primaryPurple.withValues(alpha: 0.6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDownloading ? Colors.green : AppColors.primaryPurple)
-                          .withOpacity(0.3),
+                      color:
+                          (isDownloading
+                                  ? Colors.green
+                                  : AppColors.primaryPurple)
+                              .withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -131,7 +141,9 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     ] else if (isDownloading) ...[
@@ -152,8 +164,8 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
                       _isStarting
                           ? 'Démarrage...'
                           : isDownloading
-                              ? 'En cours'
-                              : 'Télécharger',
+                          ? 'En cours'
+                          : 'Télécharger',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -176,10 +188,10 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
     });
 
     await context.read<BackgroundDownloadCubit>().startBackgroundDownload(
-          url: widget.url,
-          title: widget.title,
-          fileName: widget.fileName,
-          outputDir: widget.outputDir,
-        );
+      url: widget.url,
+      title: widget.title,
+      fileName: widget.fileName,
+      outputDir: widget.outputDir,
+    );
   }
 }

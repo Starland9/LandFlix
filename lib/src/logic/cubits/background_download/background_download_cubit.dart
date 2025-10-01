@@ -7,23 +7,24 @@ import '../../../core/services/background_download_service.dart';
 part 'background_download_state.dart';
 
 class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
-  BackgroundDownloadCubit() : super(BackgroundDownloadInitial());
+  BackgroundDownloadCubit() : super(const BackgroundDownloadInitial());
 
-  final BackgroundDownloadService _backgroundService = BackgroundDownloadService();
+  final BackgroundDownloadService _backgroundService =
+      BackgroundDownloadService();
 
   /// Initialise le service de téléchargement en arrière-plan
   Future<void> initialize() async {
     if (isClosed) return;
 
     try {
-      emit(BackgroundDownloadLoading());
+      emit(const BackgroundDownloadLoading());
       await _backgroundService.initialize();
-      
+
       // Charger l'état actuel
       await _loadCurrentState();
-      
+
       if (!isClosed) {
-        emit(BackgroundDownloadReady());
+        emit(const BackgroundDownloadReady());
       }
     } catch (e) {
       if (!isClosed) {
@@ -45,12 +46,16 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
       // Vérifier si déjà en cours
       if (_backgroundService.isDownloading(url)) {
         if (!isClosed) {
-          emit(const BackgroundDownloadError('Ce téléchargement est déjà en cours'));
+          emit(
+            const BackgroundDownloadError(
+              'Ce téléchargement est déjà en cours',
+            ),
+          );
         }
         return;
       }
 
-      emit(BackgroundDownloadStarting());
+      emit(const BackgroundDownloadStarting());
 
       final downloadId = await _backgroundService.startBackgroundDownload(
         url: url,
@@ -78,10 +83,10 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
 
     try {
       await _backgroundService.cancelDownload(downloadId);
-      
+
       // Recharger l'état
       await _loadCurrentState();
-      
+
       if (!isClosed) {
         emit(BackgroundDownloadCancelled(downloadId));
       }
@@ -97,11 +102,11 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
     if (isClosed) return;
 
     try {
-      emit(BackgroundDownloadRefreshing());
+      emit(const BackgroundDownloadRefreshing());
       await _loadCurrentState();
-      
+
       if (!isClosed) {
-        emit(BackgroundDownloadRefreshed());
+        emit(const BackgroundDownloadRefreshed());
       }
     } catch (e) {
       if (!isClosed) {
@@ -114,12 +119,14 @@ class BackgroundDownloadCubit extends Cubit<BackgroundDownloadState> {
   Future<void> _loadCurrentState() async {
     final queuedDownloads = _backgroundService.getQueuedDownloads();
     final activeDownloads = _backgroundService.getActiveDownloads();
-    
+
     if (!isClosed) {
-      emit(BackgroundDownloadUpdated(
-        queuedDownloads: queuedDownloads,
-        activeDownloads: activeDownloads,
-      ));
+      emit(
+        BackgroundDownloadUpdated(
+          queuedDownloads: queuedDownloads,
+          activeDownloads: activeDownloads,
+        ),
+      );
     }
   }
 

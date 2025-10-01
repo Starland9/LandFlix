@@ -8,16 +8,15 @@ import '../../logic/cubits/background_download/background_download_cubit.dart';
 class BackgroundDownloadIndicator extends StatefulWidget {
   final VoidCallback? onTap;
 
-  const BackgroundDownloadIndicator({
-    super.key,
-    this.onTap,
-  });
+  const BackgroundDownloadIndicator({super.key, this.onTap});
 
   @override
-  State<BackgroundDownloadIndicator> createState() => _BackgroundDownloadIndicatorState();
+  State<BackgroundDownloadIndicator> createState() =>
+      _BackgroundDownloadIndicatorState();
 }
 
-class _BackgroundDownloadIndicatorState extends State<BackgroundDownloadIndicator>
+class _BackgroundDownloadIndicatorState
+    extends State<BackgroundDownloadIndicator>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -74,14 +73,17 @@ class _BackgroundDownloadIndicatorState extends State<BackgroundDownloadIndicato
             child: GestureDetector(
               onTap: widget.onTap,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: activeDownloads > 0
                       ? AppColors.primaryGradient
                       : LinearGradient(
                           colors: [
-                            Colors.grey.withOpacity(0.8),
-                            Colors.grey.withOpacity(0.6),
+                            Colors.grey.withValues(alpha: 0.8),
+                            Colors.grey.withValues(alpha: 0.6),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -89,8 +91,11 @@ class _BackgroundDownloadIndicatorState extends State<BackgroundDownloadIndicato
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: (activeDownloads > 0 ? AppColors.primaryPurple : Colors.grey)
-                          .withOpacity(0.3),
+                      color:
+                          (activeDownloads > 0
+                                  ? AppColors.primaryPurple
+                                  : Colors.grey)
+                              .withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -117,12 +122,14 @@ class _BackgroundDownloadIndicatorState extends State<BackgroundDownloadIndicato
                     ),
                     if (activeDownloads > 0) ...[
                       const SizedBox(width: 4),
-                      SizedBox(
+                      const SizedBox(
                         width: 12,
                         height: 12,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     ],

@@ -148,19 +148,19 @@ class BackgroundDownloadItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        url,
-        title,
-        fileName,
-        outputDir,
-        notificationId,
-        status,
-        progress,
-        message,
-        filePath,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    url,
+    title,
+    fileName,
+    outputDir,
+    notificationId,
+    status,
+    progress,
+    message,
+    filePath,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 /// Détails d'un téléchargement préparé
@@ -200,5 +200,12 @@ class VideoInfo extends Equatable {
   });
 
   @override
-  List<Object?> get props => [title, description, duration, quality, thumbnail, size];
+  List<Object?> get props => [
+    title,
+    description,
+    duration,
+    quality,
+    thumbnail,
+    size,
+  ];
 }

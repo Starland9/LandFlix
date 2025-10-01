@@ -1,12 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart';
-import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
 import 'package:french_stream_downloader/src/shared/components/background_download_indicator.dart';
+import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
 
 @RoutePage()
 class MainWrapperScreen extends StatefulWidget {
@@ -93,7 +92,7 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
             },
             children: _screens,
           ),
-          
+
           // Indicateur de téléchargements en arrière-plan
           BackgroundDownloadIndicator(
             onTap: () {

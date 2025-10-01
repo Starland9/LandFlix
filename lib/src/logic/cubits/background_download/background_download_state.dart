@@ -75,10 +75,7 @@ class BackgroundDownloadUpdated extends BackgroundDownloadState {
 
   /// Récupère tous les téléchargements sous forme de liste
   List<BackgroundDownloadItem> get allDownloads {
-    return [
-      ...activeDownloads.values,
-      ...queuedDownloads,
-    ];
+    return [...activeDownloads.values, ...queuedDownloads];
   }
 
   /// Vérifie si un téléchargement est en cours pour une URL

@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uqload_downloader_dart/uqload_downloader_dart.dart' as uqload;
 import 'package:workmanager/workmanager.dart';
 
-import '../models/download_models.dart';
 import '../../logic/services/download_manager.dart';
-import 'package:uqload_downloader_dart/uqload_downloader_dart.dart' as uqload;
+import '../models/download_models.dart';
 import 'notification_service.dart';
 
 /// Service de téléchargement en arrière-plan
@@ -112,7 +111,7 @@ class BackgroundDownloadService {
     final activeItem = _activeDownloads.remove(downloadId);
     if (activeItem != null) {
       await _saveActiveDownloadsToStorage();
-      
+
       // Annuler la notification
       await NotificationService().cancelNotification(activeItem.notificationId);
     }
@@ -155,7 +154,7 @@ class BackgroundDownloadService {
         filePath: filePath,
         updatedAt: DateTime.now(),
       );
-      
+
       _activeDownloads[downloadId] = updatedItem;
       await _saveActiveDownloadsToStorage();
 
@@ -177,7 +176,7 @@ class BackgroundDownloadService {
             fileName: activeItem.fileName,
             filePath: filePath ?? '',
           );
-          
+
           // Enregistrer dans le gestionnaire de téléchargements
           if (filePath != null) {
             final videoInfo = uqload.VideoInfo(
@@ -193,7 +192,7 @@ class BackgroundDownloadService {
               originalUrl: activeItem.url,
             );
           }
-          
+
           // Retirer des téléchargements actifs
           _activeDownloads.remove(downloadId);
           await _saveActiveDownloadsToStorage();
@@ -204,14 +203,16 @@ class BackgroundDownloadService {
             fileName: activeItem.fileName,
             error: message ?? 'Erreur inconnue',
           );
-          
+
           // Retirer des téléchargements actifs
           _activeDownloads.remove(downloadId);
           await _saveActiveDownloadsToStorage();
           break;
         case DownloadStatus.cancelled:
-          await NotificationService().cancelNotification(activeItem.notificationId);
-          
+          await NotificationService().cancelNotification(
+            activeItem.notificationId,
+          );
+
           // Retirer des téléchargements actifs
           _activeDownloads.remove(downloadId);
           await _saveActiveDownloadsToStorage();
@@ -233,7 +234,7 @@ class BackgroundDownloadService {
   Future<void> _loadQueueFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     final queueString = prefs.getString(_queueKey);
-    
+
     if (queueString != null) {
       final queueJson = jsonDecode(queueString) as List;
       _downloadQueue.clear();
@@ -256,16 +257,13 @@ class BackgroundDownloadService {
   Future<void> _loadActiveDownloadsFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     final activeString = prefs.getString(_activeDownloadsKey);
-    
+
     if (activeString != null) {
       final activeJson = jsonDecode(activeString) as Map<String, dynamic>;
       _activeDownloads.clear();
       _activeDownloads.addAll(
         activeJson.map(
-          (key, value) => MapEntry(
-            key,
-            BackgroundDownloadItem.fromJson(value),
-          ),
+          (key, value) => MapEntry(key, BackgroundDownloadItem.fromJson(value)),
         ),
       );
     }
@@ -291,11 +289,11 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
       debugPrint('🔄 Exécution de la tâche en arrière-plan: $task');
-      
+
       if (task == BackgroundDownloadService._taskName && inputData != null) {
         return await _executeDownloadTask(inputData);
       }
-      
+
       return Future.value(true);
     } catch (e) {
       debugPrint('❌ Erreur dans la tâche en arrière-plan: $e');
@@ -308,10 +306,10 @@ void callbackDispatcher() {
 Future<bool> _executeDownloadTask(Map<String, dynamic> inputData) async {
   try {
     final downloadItem = BackgroundDownloadItem.fromJson(inputData);
-    
+
     // Initialiser les services
     await NotificationService().initialize();
-    
+
     // Marquer comme actif
     final backgroundService = BackgroundDownloadService();
     backgroundService._activeDownloads[downloadItem.id] = downloadItem.copyWith(
@@ -319,11 +317,11 @@ Future<bool> _executeDownloadTask(Map<String, dynamic> inputData) async {
       updatedAt: DateTime.now(),
     );
     await backgroundService._saveActiveDownloadsToStorage();
-    
+
     // Ici vous pouvez intégrer votre logique UQLoad
     // Pour l'instant, on simule un téléchargement
     await _simulateDownload(downloadItem);
-    
+
     return true;
   } catch (e) {
     debugPrint('❌ Erreur lors du téléchargement: $e');
@@ -334,11 +332,11 @@ Future<bool> _executeDownloadTask(Map<String, dynamic> inputData) async {
 /// Simule un téléchargement (à remplacer par la logique UQLoad réelle)
 Future<void> _simulateDownload(BackgroundDownloadItem item) async {
   final backgroundService = BackgroundDownloadService();
-  
+
   // Simuler la progression
   for (int i = 10; i <= 100; i += 10) {
     await Future.delayed(const Duration(seconds: 1));
-    
+
     await backgroundService.updateDownloadStatus(
       downloadId: item.id,
       status: DownloadStatus.downloading,
@@ -346,7 +344,7 @@ Future<void> _simulateDownload(BackgroundDownloadItem item) async {
       message: 'Téléchargement... $i%',
     );
   }
-  
+
   // Marquer comme terminé
   await backgroundService.updateDownloadStatus(
     downloadId: item.id,

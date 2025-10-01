@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,7 +27,9 @@ class NotificationService {
     await _requestPermissions();
 
     // Configuration Android
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // Configuration iOS
     const iosSettings = DarwinInitializationSettings(
@@ -86,7 +87,8 @@ class NotificationService {
 
     await _notifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
@@ -143,7 +145,7 @@ class NotificationService {
     if (!_isInitialized) await initialize();
 
     final progressPercent = (progress * 100).round();
-    
+
     final androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
@@ -199,7 +201,7 @@ class NotificationService {
       ongoing: false,
       icon: '@mipmap/ic_launcher',
       largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-      color: const Color(0xFF6C5CE7),
+      color: Color(0xFF6C5CE7),
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -208,7 +210,7 @@ class NotificationService {
       presentSound: true,
     );
 
-    final notificationDetails = NotificationDetails(
+    final notificationDetails = const NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -240,7 +242,7 @@ class NotificationService {
       ongoing: false,
       icon: '@mipmap/ic_launcher',
       largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-      color: const Color(0xFFE74C3C),
+      color: Color(0xFFE74C3C),
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -249,7 +251,7 @@ class NotificationService {
       presentSound: true,
     );
 
-    final notificationDetails = NotificationDetails(
+    final notificationDetails = const NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -275,7 +277,7 @@ class NotificationService {
   /// Callback quand une notification est tapée
   void _onNotificationTapped(NotificationResponse response) {
     debugPrint('Notification tapée: ${response.payload}');
-    
+
     // Ici vous pouvez naviguer vers l'écran des téléchargements
     // ou ouvrir le fichier selon le payload
     if (response.payload != null) {

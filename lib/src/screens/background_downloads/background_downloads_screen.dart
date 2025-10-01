@@ -11,7 +11,8 @@ class BackgroundDownloadsScreen extends StatefulWidget {
   const BackgroundDownloadsScreen({super.key});
 
   @override
-  State<BackgroundDownloadsScreen> createState() => _BackgroundDownloadsScreenState();
+  State<BackgroundDownloadsScreen> createState() =>
+      _BackgroundDownloadsScreenState();
 }
 
 class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
@@ -52,10 +53,7 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
         elevation: 0,
         title: const Text(
           'Téléchargements en arrière-plan',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
           IconButton(
@@ -269,27 +267,27 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
 
     switch (status) {
       case DownloadStatus.queued:
-        backgroundColor = Colors.orange.withOpacity(0.2);
+        backgroundColor = Colors.orange.withValues(alpha: 0.2);
         textColor = Colors.orange;
         break;
       case DownloadStatus.downloading:
-        backgroundColor = AppColors.primaryPurple.withOpacity(0.2);
+        backgroundColor = AppColors.primaryPurple.withValues(alpha: 0.2);
         textColor = AppColors.primaryPurple;
         break;
       case DownloadStatus.completed:
-        backgroundColor = Colors.green.withOpacity(0.2);
+        backgroundColor = Colors.green.withValues(alpha: 0.2);
         textColor = Colors.green;
         break;
       case DownloadStatus.failed:
-        backgroundColor = Colors.red.withOpacity(0.2);
+        backgroundColor = Colors.red.withValues(alpha: 0.2);
         textColor = Colors.red;
         break;
       case DownloadStatus.cancelled:
-        backgroundColor = Colors.grey.withOpacity(0.2);
+        backgroundColor = Colors.grey.withValues(alpha: 0.2);
         textColor = Colors.grey;
         break;
       default:
-        backgroundColor = Colors.grey.withOpacity(0.2);
+        backgroundColor = Colors.grey.withValues(alpha: 0.2);
         textColor = Colors.grey;
     }
 
@@ -302,10 +300,7 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            status.icon,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(status.icon, style: const TextStyle(fontSize: 12)),
           const SizedBox(width: 4),
           Text(
             status.displayName,
@@ -329,10 +324,7 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
           children: [
             const Text(
               'Progression',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             Text(
               '${(download.progress * 100).toInt()}%',
@@ -348,7 +340,9 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
         LinearProgressIndicator(
           value: download.progress,
           backgroundColor: AppColors.darkSurfaceVariant,
-          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryPurple),
+          valueColor: const AlwaysStoppedAnimation<Color>(
+            AppColors.primaryPurple,
+          ),
         ),
       ],
     );
@@ -362,7 +356,7 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
           Icon(
             Icons.download_outlined,
             size: 64,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -377,10 +371,7 @@ class _BackgroundDownloadsScreenState extends State<BackgroundDownloadsScreen>
           const Text(
             'Les téléchargements en arrière-plan\napparaîtront ici',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),

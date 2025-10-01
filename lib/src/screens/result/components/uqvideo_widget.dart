@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
-import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
-import 'package:french_stream_downloader/src/shared/components/background_download_button.dart';
-import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
-import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/cubits/download/download_cubit.dart';
 import 'package:french_stream_downloader/src/logic/models/uqvideo.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/shared/components/background_download_button.dart';
+import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
 
 class UqvideoWidget extends StatefulWidget {
   const UqvideoWidget({super.key, required this.uqvideo});
@@ -307,11 +307,13 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
         BackgroundDownloadButton(
           url: widget.uqvideo.url,
           title: widget.uqvideo.title,
-          fileName: UQLoadDownloadService.sanitizeFileName(widget.uqvideo.title),
+          fileName: UQLoadDownloadService.sanitizeFileName(
+            widget.uqvideo.title,
+          ),
         ),
-        
+
         const SizedBox(width: 8),
-        
+
         // Bouton de téléchargement direct
         _buildDirectDownloadButton(),
       ],
