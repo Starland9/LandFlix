@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
-import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/models/search_result.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
+import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
 
 class ModernSearchResultCard extends StatefulWidget {
   final SearchResult searchResult;
@@ -248,53 +248,9 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                         color: AppColors.textPrimary,
                                         fontSize: 14,
                                       ),
-                                  maxLines: 2,
+                                  maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-
-                              // Indicateur de qualité (si disponible)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: AppColors.primaryGradient,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      "HD",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 9,
-                                          ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      "Disponible",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: AppColors.success,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 10,
-                                          ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),

@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart';
+import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
 
 @RoutePage()
 class MainWrapperScreen extends StatefulWidget {
@@ -138,9 +138,10 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
                     children: [
                       // Indicateur de sélection
                       AnimatedContainer(
+                        padding: const EdgeInsets.all(2),
                         duration: const Duration(milliseconds: 300),
-                        width: isActive ? 80 : 0,
-                        height: isActive ? 40 : 0,
+                        width: isActive ? 120 : 0,
+                        height: isActive ? 60 : 0,
                         decoration: BoxDecoration(
                           gradient: isActive ? AppColors.primaryGradient : null,
                           borderRadius: BorderRadius.circular(20),
