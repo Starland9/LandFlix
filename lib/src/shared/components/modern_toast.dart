@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/components/glass_card.dart';
+import 'package:french_stream_downloader/src/shared/components/glass_card.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 
 enum ToastType { success, error, warning, info }

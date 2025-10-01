@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/components/gradient_button.dart';
-import 'package:french_stream_downloader/src/core/components/modern_search_field.dart';
-import 'package:french_stream_downloader/src/core/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/shared/components/gradient_button.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_search_field.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 

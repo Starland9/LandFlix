@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/components/modern_toast.dart';
-import 'package:french_stream_downloader/src/core/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/models/download_item.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 

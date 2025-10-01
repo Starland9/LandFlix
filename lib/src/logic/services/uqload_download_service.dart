@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:french_stream_downloader/src/core/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 

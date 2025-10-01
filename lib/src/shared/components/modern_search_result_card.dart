@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/components/downloaded_badge.dart';
+import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
-import 'package:french_stream_downloader/src/core/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/models/search_result.dart';
 

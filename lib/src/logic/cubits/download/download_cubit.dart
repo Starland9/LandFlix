@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:french_stream_downloader/src/core/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 
 part 'download_state.dart';
 

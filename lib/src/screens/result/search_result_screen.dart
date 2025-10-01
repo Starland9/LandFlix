@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:french_stream_downloader/src/core/components/modern_search_result_card.dart';
-import 'package:french_stream_downloader/src/core/components/shimmer_card.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_search_result_card.dart';
+import 'package:french_stream_downloader/src/shared/components/shimmer_card.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/cubits/uq/uq_cubit.dart';
 import 'package:french_stream_downloader/src/logic/repos/uq_repo.dart';

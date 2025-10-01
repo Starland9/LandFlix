@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/components/ripple_floating_button.dart';
+import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
