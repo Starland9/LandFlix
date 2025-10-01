@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart' as uqload;
 import 'package:workmanager/workmanager.dart';
@@ -57,13 +58,15 @@ class BackgroundDownloadService {
 
     final downloadId = _generateDownloadId(url);
     final notificationId = NotificationService.generateNotificationId(url);
+    final defaultOutputDir =
+        outputDir ?? await UQLoadDownloadService.getDefaultDownloadDirectory();
 
     final downloadItem = BackgroundDownloadItem(
       id: downloadId,
       url: url,
       title: title,
       fileName: fileName ?? _sanitizeFileName(title),
-      outputDir: outputDir,
+      outputDir: defaultOutputDir,
       notificationId: notificationId,
       status: DownloadStatus.queued,
       createdAt: DateTime.now(),
@@ -73,11 +76,14 @@ class BackgroundDownloadService {
     _downloadQueue.add(downloadItem);
     await _saveQueueToStorage();
 
-    // Programmer la tâche
+    // Programmer la tâche avec données compatibles WorkManager
+    final taskData = downloadItem.toWorkManagerData();
+    debugPrint('📤 Données envoyées à WorkManager: $taskData');
+
     await Workmanager().registerOneOffTask(
       downloadId,
       _taskName,
-      inputData: downloadItem.toJson(),
+      inputData: taskData,
       constraints: Constraints(
         networkType: NetworkType.connected,
         requiresBatteryNotLow: false,
@@ -305,9 +311,12 @@ void callbackDispatcher() {
 /// Exécute une tâche de téléchargement
 Future<bool> _executeDownloadTask(Map<String, dynamic> inputData) async {
   try {
-    final downloadItem = BackgroundDownloadItem.fromJson(inputData);
+    debugPrint('📊 Données reçues: $inputData');
 
-    // Initialiser les services
+    // Créer l'objet depuis les données WorkManager avec gestion sécurisée
+    final downloadItem = BackgroundDownloadItem.fromWorkManagerData(
+      inputData,
+    ); // Initialiser les services
     await NotificationService().initialize();
 
     // Marquer comme actif

@@ -300,81 +300,11 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Bouton de téléchargement en arrière-plan
-        BackgroundDownloadButton(
-          url: widget.uqvideo.url,
-          title: widget.uqvideo.title,
-          fileName: UQLoadDownloadService.sanitizeFileName(
-            widget.uqvideo.title,
-          ),
-        ),
-
-        const SizedBox(width: 8),
-
-        // Bouton de téléchargement direct
-        _buildDirectDownloadButton(),
-      ],
-    );
-  }
-
-  Widget _buildDirectDownloadButton() {
-    return BlocBuilder<DownloadCubit, DownloadState>(
-      builder: (context, state) {
-        if (state is DownloadInProgress) {
-          return Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => _downloadCubit.cancelDownload(),
-                child: const Icon(
-                  Icons.close_rounded,
-                  color: AppColors.error,
-                  size: 24,
-                ),
-              ),
-            ),
-          );
-        }
-
-        return Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () => _startDownload(),
-              child: const Icon(
-                Icons.download_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-        );
-      },
+    return BackgroundDownloadButton(
+      url: widget.uqvideo.url,
+      title: widget.uqvideo.title,
+      fileName: UQLoadDownloadService.sanitizeFileName(widget.uqvideo.title),
+      
     );
   }
 

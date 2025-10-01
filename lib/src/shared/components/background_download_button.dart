@@ -95,10 +95,8 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
                   : _startBackgroundDownload,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   gradient: isDownloading
                       ? LinearGradient(
@@ -132,47 +130,26 @@ class _BackgroundDownloadButtonState extends State<BackgroundDownloadButton>
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_isStarting) ...[
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: _isStarting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
+                        )
+                      : Icon(
+                          isDownloading
+                              ? Icons.cloud_download_rounded
+                              : Icons.download_for_offline_rounded,
+                          size: 20,
+                          color: Colors.white,
                         ),
-                      ),
-                    ] else if (isDownloading) ...[
-                      const Icon(
-                        Icons.cloud_download_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ] else ...[
-                      const Icon(
-                        Icons.download_for_offline_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ],
-                    const SizedBox(width: 8),
-                    Text(
-                      _isStarting
-                          ? 'Démarrage...'
-                          : isDownloading
-                          ? 'En cours'
-                          : 'Télécharger',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),

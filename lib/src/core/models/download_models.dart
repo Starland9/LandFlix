@@ -146,6 +146,61 @@ class BackgroundDownloadItem extends Equatable {
     );
   }
 
+  /// Conversion vers un format compatible avec WorkManager (types primitifs uniquement)
+  Map<String, dynamic> toWorkManagerData() {
+    return {
+      'id': id,
+      'url': url,
+      'title': title,
+      'fileName': fileName,
+      'outputDir': outputDir,
+      'notificationId': notificationId,
+      'createdAt': createdAt.millisecondsSinceEpoch,
+    };
+  }
+
+  /// Création depuis les données WorkManager avec gestion sécurisée des types
+  factory BackgroundDownloadItem.fromWorkManagerData(
+    Map<String, dynamic> data,
+  ) {
+    int parseInt(dynamic value, {int? defaultValue}) {
+      if (value == null) {
+        return defaultValue ?? 0;
+      }
+
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is num) return value.toInt();
+      if (value is String) {
+        return int.tryParse(value) ?? (defaultValue ?? 0);
+      }
+
+      return defaultValue ?? 0;
+    }
+
+    String? parseString(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value.isEmpty ? null : value;
+      return value.toString();
+    }
+
+    final createdAtMillis = parseInt(
+      data['createdAt'],
+      defaultValue: DateTime.now().millisecondsSinceEpoch,
+    );
+
+    return BackgroundDownloadItem(
+      id: parseString(data['id']) ?? 'unknown',
+      url: parseString(data['url']) ?? '',
+      title: parseString(data['title']) ?? 'Téléchargement',
+      fileName: parseString(data['fileName']) ?? 'file.mp4',
+      outputDir: parseString(data['outputDir']),
+      notificationId: parseInt(data['notificationId']),
+      status: DownloadStatus.queued,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMillis),
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,
