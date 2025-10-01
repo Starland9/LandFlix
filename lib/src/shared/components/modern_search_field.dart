@@ -53,6 +53,7 @@ class _ModernSearchFieldState extends State<ModernSearchField>
         return Transform.scale(
           scale: _scaleAnimation.value,
           child: Container(
+            clipBehavior: Clip.hardEdge,
             padding: _isFocused ? const EdgeInsets.all(2) : null,
             decoration: BoxDecoration(
               gradient: _isFocused ? AppColors.primaryGradient : null,
