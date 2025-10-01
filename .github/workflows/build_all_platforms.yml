@@ -16,6 +16,8 @@ jobs:
     build-android:
         name: Build Android APK
         runs-on: ubuntu-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -37,7 +39,7 @@ jobs:
               run: flutter pub get
 
             - name: Build Android APK
-              run: flutter build apk --split-per-abi
+              run: flutter build apk --split-per-abi --dart-define=API_URL=${API_URL}
 
             - name: Package Android artifacts
               run: |
@@ -54,6 +56,8 @@ jobs:
     build-ios:
         name: Build iOS IPA (no codesign)
         runs-on: macos-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -80,7 +84,7 @@ jobs:
                   flutter precache --ios
 
             - name: Build iOS IPA (no codesign)
-              run: flutter build ipa --no-codesign
+              run: flutter build ipa --no-codesign --dart-define=API_URL=${API_URL}
 
             - name: Collect iOS artifacts
               run: |
@@ -97,6 +101,8 @@ jobs:
     build-web:
         name: Build Web bundle
         runs-on: ubuntu-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -118,7 +124,7 @@ jobs:
               run: flutter pub get
 
             - name: Build web bundle
-              run: flutter build web
+              run: flutter build web --dart-define=API_URL=${API_URL}
 
             - name: Package web bundle
               run: |
@@ -136,6 +142,8 @@ jobs:
     build-linux:
         name: Build Linux desktop bundle
         runs-on: ubuntu-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -164,13 +172,12 @@ jobs:
             - name: Build Linux desktop bundle
               run: |
                   flutter config --enable-linux-desktop
-                  flutter build linux --release
+                  flutter build linux --release --dart-define=API_URL=${API_URL}
 
             - name: Package Linux bundle
               run: |
                   mkdir -p build/artifacts
-                  cd build/linux/x64/release
-                  zip -r ../../artifacts/linux-build.zip bundle
+                  zip -r build/artifacts/linux-build.zip build/linux/x64/release/bundle
 
             - name: Upload Linux artifacts
               uses: actions/upload-artifact@v4
@@ -182,6 +189,8 @@ jobs:
     build-macos:
         name: Build macOS app
         runs-on: macos-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -206,7 +215,7 @@ jobs:
               run: |
                   flutter config --enable-macos-desktop
                   flutter precache --macos
-                  flutter build macos --release
+                  flutter build macos --release --dart-define=API_URL=${API_URL}
 
             - name: Package macOS app
               run: |
@@ -224,6 +233,8 @@ jobs:
     build-windows:
         name: Build Windows app
         runs-on: windows-latest
+        env:
+            API_URL: ${{ secrets.API_URL }}
         steps:
             - name: Checkout sources
               uses: actions/checkout@v4
@@ -249,7 +260,14 @@ jobs:
               shell: pwsh
               run: |
                   flutter config --enable-windows-desktop
-                  flutter build windows --release
+                  flutter build windows --release --dart-define="API_URL=$Env:API_URL"
+
+            - name: Ensure Windows release build exists
+              run: |
+                if (!(Test-Path "build/windows/runner/Release")) {
+                Write-Error "Release directory not found. Make sure the build step completed successfully."
+                exit 1
+                }
 
             - name: Package Windows app
               shell: pwsh
