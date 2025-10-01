@@ -10,7 +10,7 @@ class DownloadCubit extends Cubit<DownloadState> {
   /// Prépare un téléchargement en récupérant les informations de la vidéo
   Future<void> prepareDownload(String url) async {
     if (!UQLoadDownloadService.isValidUQLoadUrl(url)) {
-      emit(DownloadError("URL invalide pour UQLoad"));
+      emit(const DownloadError("URL invalide pour UQLoad"));
       return;
     }
 
@@ -30,7 +30,7 @@ class DownloadCubit extends Cubit<DownloadState> {
     String? outputFile,
     String? outputDir,
   }) async {
-    emit(DownloadInProgress(0.0, "Initialisation..."));
+    emit(const DownloadInProgress(0.0, "Initialisation..."));
 
     try {
       final filePath = await UQLoadDownloadService.downloadVideo(
@@ -76,7 +76,7 @@ class DownloadCubit extends Cubit<DownloadState> {
   /// Récupère les informations d'une vidéo sans la télécharger
   Future<void> getVideoInfo(String url) async {
     if (!UQLoadDownloadService.isValidUQLoadUrl(url)) {
-      emit(DownloadError("URL invalide pour UQLoad"));
+      emit(const DownloadError("URL invalide pour UQLoad"));
       return;
     }
 

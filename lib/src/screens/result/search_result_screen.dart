@@ -313,7 +313,7 @@ class _SearchResultScreenState extends State<SearchResultScreen>
         const SizedBox(height: 16),
 
         // Grille shimmer
-        Expanded(child: ShimmerGrid(itemCount: 6)),
+        const Expanded(child: ShimmerGrid(itemCount: 6)),
       ],
     );
   }

@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         child: Column(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.movie_filter_rounded,
                               size: 48,
                               color: AppColors.primaryPurple,
@@ -353,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.trending_up_rounded,
               size: 16,
               color: AppColors.primaryPurple,

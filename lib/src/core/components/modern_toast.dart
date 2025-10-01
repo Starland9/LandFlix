@@ -196,7 +196,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                         color: AppColors.textTertiary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.close_rounded,
                         color: AppColors.textTertiary,
                         size: 16,

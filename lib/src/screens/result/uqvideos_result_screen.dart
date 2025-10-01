@@ -112,7 +112,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               gradient: AppColors.cardGradient,
                             ),
                             child: const Center(

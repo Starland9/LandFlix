@@ -13,6 +13,20 @@
 			"problemMatcher": [],
 			"label": "flutter: flutter build apk per abi",
 			"detail": ""
+		},
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"build",
+				"apk",
+				"--dart-define-from-file",
+				".env"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"label": "flutter: flutter build apk",
+			"detail": ""
 		}
 	]
 }

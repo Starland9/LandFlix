@@ -130,8 +130,9 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                   fit: BoxFit.cover,
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return Container(
                                           width: double.infinity,
                                           height: double.infinity,
@@ -152,14 +153,14 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                     return Container(
                                       width: double.infinity,
                                       height: double.infinity,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         gradient: AppColors.cardGradient,
                                       ),
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(
+                                          const Icon(
                                             Icons.broken_image_rounded,
                                             size: 48,
                                             color: AppColors.textTertiary,

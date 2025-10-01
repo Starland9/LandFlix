@@ -94,7 +94,7 @@ class _ModernSearchFieldState extends State<ModernSearchField>
                 style: Theme.of(context).textTheme.bodyLarge,
                 decoration: InputDecoration(
                   hintText: widget.hintText,
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     color: AppColors.textTertiary,
                     fontSize: 16,
                   ),
