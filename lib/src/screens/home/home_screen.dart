@@ -5,6 +5,7 @@ import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/shared/components/gradient_button.dart';
 import 'package:french_stream_downloader/src/shared/components/modern_search_field.dart';
 import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/shared/components/download_test_widget.dart';
 
 @RoutePage()
 class HomeScreen extends StatefulWidget {
@@ -322,6 +323,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
+                  ),
+
+                  const SizedBox(height: 60),
+
+                  // Widget de test temporaire
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: const DownloadTestWidget(),
                   ),
 
                   const SizedBox(height: 60),

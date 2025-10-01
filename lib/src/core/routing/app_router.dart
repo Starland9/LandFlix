@@ -15,5 +15,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SearchResultRoute.page),
     AutoRoute(page: UqvideosResultRoute.page),
     AutoRoute(page: DownloadsRoute.page),
+    AutoRoute(page: BackgroundDownloadsRoute.page),
   ];
 }

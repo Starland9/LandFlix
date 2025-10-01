@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:french_stream_downloader/src/app.dart';
+import 'package:french_stream_downloader/src/core/services/background_download_service.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/logic/repos/uq_repo.dart';
 import 'package:french_stream_downloader/src/logic/services/dio_service.dart';
@@ -10,8 +11,9 @@ void main() async {
   
   final dio = await DioService().init();
   
-  // Initialiser le gestionnaire de téléchargements
+  // Initialiser les services
   await DownloadManager.instance.initialize();
+  await BackgroundDownloadService().initialize();
 
   runApp(RepositoryProvider(create: (context) => UqRepo(dio), child: MyApp()));
 }

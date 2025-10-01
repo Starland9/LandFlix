@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
 import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
+import 'package:french_stream_downloader/src/shared/components/background_download_button.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
@@ -286,8 +287,8 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
 
                     const SizedBox(width: 16),
 
-                    // Bouton d'action
-                    _buildActionButton(),
+                    // Boutons d'action
+                    _buildActionButtons(),
                   ],
                 ),
               ),
@@ -298,7 +299,26 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     );
   }
 
-  Widget _buildActionButton() {
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Bouton de téléchargement en arrière-plan
+        BackgroundDownloadButton(
+          url: widget.uqvideo.url,
+          title: widget.uqvideo.title,
+          fileName: UQLoadDownloadService.sanitizeFileName(widget.uqvideo.title),
+        ),
+        
+        const SizedBox(width: 8),
+        
+        // Bouton de téléchargement direct
+        _buildDirectDownloadButton(),
+      ],
+    );
+  }
+
+  Widget _buildDirectDownloadButton() {
     return BlocBuilder<DownloadCubit, DownloadState>(
       builder: (context, state) {
         if (state is DownloadInProgress) {

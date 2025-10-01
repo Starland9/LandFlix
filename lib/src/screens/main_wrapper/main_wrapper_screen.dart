@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart';
 import 'package:french_stream_downloader/src/shared/components/ripple_floating_button.dart';
+import 'package:french_stream_downloader/src/shared/components/background_download_indicator.dart';
 
 @RoutePage()
 class MainWrapperScreen extends StatefulWidget {
@@ -80,14 +82,26 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        children: _screens,
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            children: _screens,
+          ),
+          
+          // Indicateur de téléchargements en arrière-plan
+          BackgroundDownloadIndicator(
+            onTap: () {
+              // TODO: Naviguer vers l'écran des téléchargements en arrière-plan
+              // AutoRouter.of(context).push(const BackgroundDownloadsRoute());
+            },
+          ),
+        ],
       ),
       bottomNavigationBar: _buildModernBottomNav(),
       floatingActionButton: _currentIndex == 1 ? _buildSearchFAB() : null,
