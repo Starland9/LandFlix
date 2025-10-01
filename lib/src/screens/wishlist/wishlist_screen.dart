@@ -115,7 +115,7 @@ class _WishlistScreenState extends State<WishlistScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.primaryPurple.withOpacity(0.3),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -148,7 +148,7 @@ class _WishlistScreenState extends State<WishlistScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primaryPurple.withOpacity(0.2),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(

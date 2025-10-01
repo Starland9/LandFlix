@@ -115,7 +115,7 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
         gradient: AppColors.cardGradient,
         border: Border(
           top: BorderSide(
-            color: AppColors.primaryPurple.withOpacity(0.2),
+            color: AppColors.primaryPurple.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -147,8 +147,8 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
                           boxShadow: isActive
                               ? [
                                   BoxShadow(
-                                    color: AppColors.primaryPurple.withOpacity(
-                                      0.3,
+                                    color: AppColors.primaryPurple.withValues(
+                                      alpha: 0.3,
                                     ),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),

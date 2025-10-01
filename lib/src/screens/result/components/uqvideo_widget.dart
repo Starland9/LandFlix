@@ -94,12 +94,12 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
             gradient: AppColors.cardGradient,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primaryPurple.withOpacity(0.2),
+              color: AppColors.primaryPurple.withValues(alpha: 0.2),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -123,7 +123,9 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryPurple.withOpacity(0.3),
+                            color: AppColors.primaryPurple.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -164,11 +166,13 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accentTeal.withOpacity(0.2),
+                                  color: AppColors.accentTeal.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: AppColors.accentTeal.withOpacity(
-                                      0.3,
+                                    color: AppColors.accentTeal.withValues(
+                                      alpha: 0.3,
                                     ),
                                   ),
                                 ),
@@ -302,9 +306,9 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.1),
+              color: AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
             ),
             child: Material(
               color: Colors.transparent,
@@ -329,7 +333,7 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryPurple.withOpacity(0.3),
+                color: AppColors.primaryPurple.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

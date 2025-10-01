@@ -95,8 +95,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryPurple.withOpacity(
-                                    0.4,
+                                  color: AppColors.primaryPurple.withValues(
+                                    alpha: 0.4,
                                   ),
                                   blurRadius: 30,
                                   spreadRadius: 5,
@@ -176,7 +176,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           gradient: AppColors.cardGradient,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: AppColors.primaryPurple.withOpacity(0.2),
+                            color: AppColors.primaryPurple.withValues(
+                              alpha: 0.2,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -346,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           color: AppColors.darkSurfaceVariant,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.primaryPurple.withOpacity(0.3),
+            color: AppColors.primaryPurple.withValues(alpha: 0.3),
             width: 1,
           ),
         ),

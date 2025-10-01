@@ -32,10 +32,13 @@ class GlassCard extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         borderRadius: borderRadius ?? BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -48,8 +51,8 @@ class GlassCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color:
-                  color?.withOpacity(opacity) ??
-                  AppColors.darkSurface.withOpacity(opacity),
+                  color?.withValues(alpha: opacity) ??
+                  AppColors.darkSurface.withValues(alpha: opacity),
               borderRadius: borderRadius ?? BorderRadius.circular(16),
             ),
             padding: padding ?? const EdgeInsets.all(16),
@@ -153,19 +156,19 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
                 borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
                 border: Border.all(
                   color: _isPressed
-                      ? AppColors.primaryPurple.withOpacity(0.5)
-                      : Colors.white.withOpacity(0.1),
+                      ? AppColors.primaryPurple.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.1),
                   width: _isPressed ? 2 : 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: _elevationAnimation.value,
                     offset: Offset(0, _elevationAnimation.value / 2),
                   ),
                   if (_isPressed)
                     BoxShadow(
-                      color: AppColors.primaryPurple.withOpacity(0.3),
+                      color: AppColors.primaryPurple.withValues(alpha: 0.3),
                       blurRadius: _elevationAnimation.value,
                       offset: Offset(0, _elevationAnimation.value / 2),
                     ),
@@ -181,8 +184,10 @@ class _AnimatedGlassCardState extends State<AnimatedGlassCard>
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          widget.color?.withOpacity(widget.opacity) ??
-                          AppColors.darkSurface.withOpacity(widget.opacity),
+                          widget.color?.withValues(alpha: widget.opacity) ??
+                          AppColors.darkSurface.withValues(
+                            alpha: widget.opacity,
+                          ),
                       borderRadius:
                           widget.borderRadius ?? BorderRadius.circular(16),
                     ),

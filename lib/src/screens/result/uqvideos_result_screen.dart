@@ -72,7 +72,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                 leading: Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
@@ -90,7 +90,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -134,7 +134,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
@@ -305,7 +305,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.primaryPurple.withOpacity(0.3),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -357,7 +357,7 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.error.withOpacity(0.3),
+                  color: AppColors.error.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),

@@ -65,14 +65,14 @@ class _ModernSearchFieldState extends State<ModernSearchField>
                 boxShadow: _isFocused
                     ? [
                         BoxShadow(
-                          color: AppColors.primaryPurple.withOpacity(0.2),
+                          color: AppColors.primaryPurple.withValues(alpha: 0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),

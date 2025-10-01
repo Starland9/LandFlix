@@ -78,8 +78,8 @@ class _SearchResultScreenState extends State<SearchResultScreen>
                                 color: AppColors.darkSurfaceVariant,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.primaryPurple.withOpacity(
-                                    0.3,
+                                  color: AppColors.primaryPurple.withValues(
+                                    alpha: 0.3,
                                   ),
                                 ),
                               ),
@@ -332,7 +332,7 @@ class _SearchResultScreenState extends State<SearchResultScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.primaryPurple.withOpacity(0.3),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -384,7 +384,7 @@ class _SearchResultScreenState extends State<SearchResultScreen>
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.error.withOpacity(0.3),
+                  color: AppColors.error.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),

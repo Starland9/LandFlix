@@ -110,12 +110,14 @@ class _DownloadsScreenState extends State<DownloadsScreen>
       final uri = Uri.file(download.filePath);
       await launchUrl(uri);
     } catch (e) {
-      ModernToast.show(
-        context: context,
-        message: "Impossible d'ouvrir le fichier",
-        type: ToastType.error,
-        title: "❌ Erreur",
-      );
+      if (mounted) {
+        ModernToast.show(
+          context: context,
+          message: "Impossible d'ouvrir le fichier",
+          type: ToastType.error,
+          title: "❌ Erreur",
+        );
+      }
     }
   }
 
@@ -236,7 +238,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                   gradient: AppColors.cardGradient,
                   borderRadius: BorderRadius.circular(60),
                   border: Border.all(
-                    color: AppColors.primaryPurple.withOpacity(0.3),
+                    color: AppColors.primaryPurple.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -310,21 +312,21 @@ class _DownloadsScreenState extends State<DownloadsScreen>
         gradient: isDeleted
             ? LinearGradient(
                 colors: [
-                  AppColors.darkSurface.withOpacity(0.5),
-                  AppColors.darkSurfaceVariant.withOpacity(0.3),
+                  AppColors.darkSurface.withValues(alpha: 0.5),
+                  AppColors.darkSurfaceVariant.withValues(alpha: 0.3),
                 ],
               )
             : AppColors.cardGradient,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDeleted
-              ? AppColors.error.withOpacity(0.3)
-              : AppColors.primaryPurple.withOpacity(0.2),
+              ? AppColors.error.withValues(alpha: 0.3)
+              : AppColors.primaryPurple.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -390,10 +392,14 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.accentTeal.withOpacity(0.2),
+                              color: AppColors.accentTeal.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: AppColors.accentTeal.withOpacity(0.3),
+                                color: AppColors.accentTeal.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -416,10 +422,14 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryPurple.withOpacity(0.2),
+                              color: AppColors.primaryPurple.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: AppColors.primaryPurple.withOpacity(0.3),
+                                color: AppColors.primaryPurple.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -441,10 +451,10 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.error.withOpacity(0.2),
+                                color: AppColors.error.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: AppColors.error.withOpacity(0.3),
+                                  color: AppColors.error.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(
@@ -479,9 +489,11 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                 // Bouton d'action
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: IconButton(
                     onPressed: () => _deleteDownload(download),
@@ -506,8 +518,8 @@ class _DownloadsScreenState extends State<DownloadsScreen>
         gradient: download.status == DownloadStatus.deleted
             ? LinearGradient(
                 colors: [
-                  AppColors.error.withOpacity(0.3),
-                  AppColors.error.withOpacity(0.1),
+                  AppColors.error.withValues(alpha: 0.3),
+                  AppColors.error.withValues(alpha: 0.1),
                 ],
               )
             : AppColors.primaryGradient,
@@ -559,7 +571,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
               await DownloadManager.instance.cleanupDeletedDownloads();
               await _loadDownloads();
 
-              if (mounted) {
+              if (context.mounted) {
                 ModernToast.show(
                   context: context,
                   message: "Nettoyage terminé",

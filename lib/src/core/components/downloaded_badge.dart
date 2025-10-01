@@ -20,9 +20,9 @@ class DownloadedBadge extends StatelessWidget {
         vertical: size == BadgeSize.large ? 6 : 4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.2),
+        color: AppColors.success.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(size == BadgeSize.large ? 12 : 8),
-        border: Border.all(color: AppColors.success.withOpacity(0.3)),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -64,11 +64,11 @@ class DownloadIndicatorOverlay extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: AppColors.success.withOpacity(0.9),
+          color: AppColors.success.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.success.withOpacity(0.3),
+              color: AppColors.success.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

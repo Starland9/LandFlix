@@ -60,7 +60,7 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPurple.withOpacity(0.1),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.1),
                   blurRadius: _elevationAnimation.value,
                   offset: Offset(0, _elevationAnimation.value / 2),
                 ),
@@ -87,8 +87,8 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: _isHovered
-                          ? AppColors.primaryPurple.withOpacity(0.6)
-                          : AppColors.primaryPurple.withOpacity(0.2),
+                          ? AppColors.primaryPurple.withValues(alpha: 0.6)
+                          : AppColors.primaryPurple.withValues(alpha: 0.2),
                       width: _isHovered ? 2 : 1,
                     ),
                   ),
@@ -189,7 +189,7 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                       end: Alignment.bottomCenter,
                                       colors: [
                                         Colors.transparent,
-                                        Colors.black.withOpacity(0.7),
+                                        Colors.black.withValues(alpha: 0.7),
                                       ],
                                     ),
                                   ),
@@ -200,7 +200,9 @@ class _ModernSearchResultCardState extends State<ModernSearchResultCard>
                                   Positioned.fill(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.5),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.5,
+                                        ),
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(20),
                                           topRight: Radius.circular(20),

@@ -116,8 +116,10 @@ class _RippleFloatingButtonState extends State<RippleFloatingButton>
                                 color:
                                     (widget.backgroundColor ??
                                             AppColors.primaryPurple)
-                                        .withOpacity(
-                                          0.3 * (1 - _rippleAnimation.value),
+                                        .withValues(
+                                          alpha:
+                                              0.3 *
+                                              (1 - _rippleAnimation.value),
                                         ),
                                 width: 2,
                               ),
@@ -137,8 +139,10 @@ class _RippleFloatingButtonState extends State<RippleFloatingButton>
                                 color:
                                     (widget.backgroundColor ??
                                             AppColors.primaryPurple)
-                                        .withOpacity(
-                                          0.5 * (1 - _rippleAnimation.value),
+                                        .withValues(
+                                          alpha:
+                                              0.5 *
+                                              (1 - _rippleAnimation.value),
                                         ),
                                 width: 1.5,
                               ),
@@ -160,12 +164,12 @@ class _RippleFloatingButtonState extends State<RippleFloatingButton>
                             color:
                                 (widget.backgroundColor ??
                                         AppColors.primaryPurple)
-                                    .withOpacity(0.4),
+                                    .withValues(alpha: 0.4),
                             blurRadius: 16,
                             offset: const Offset(0, 8),
                           ),
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),

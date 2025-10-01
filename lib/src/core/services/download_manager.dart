@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -206,7 +207,7 @@ class DownloadManager {
         try {
           await file.delete();
         } catch (e) {
-          print("Erreur lors de la suppression du fichier: $e");
+          dev.log("Erreur lors de la suppression du fichier: $e");
         }
       }
 
@@ -282,7 +283,7 @@ class DownloadManager {
             .toList();
       }
     } catch (e) {
-      print("Erreur lors du chargement des téléchargements: $e");
+      dev.log("Erreur lors du chargement des téléchargements: $e");
       _downloads = [];
     }
   }
@@ -296,7 +297,7 @@ class DownloadManager {
       );
       await prefs.setString(_downloadsKey, downloadsJson);
     } catch (e) {
-      print("Erreur lors de la sauvegarde des téléchargements: $e");
+      dev.log("Erreur lors de la sauvegarde des téléchargements: $e");
     }
   }
 
@@ -307,7 +308,7 @@ class DownloadManager {
       final ids = prefs.getStringList(_downloadedIdsKey);
       _downloadedIds = ids?.toSet() ?? {};
     } catch (e) {
-      print("Erreur lors du chargement des IDs téléchargés: $e");
+      dev.log("Erreur lors du chargement des IDs téléchargés: $e");
       _downloadedIds = {};
     }
   }
@@ -318,7 +319,7 @@ class DownloadManager {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_downloadedIdsKey, _downloadedIds.toList());
     } catch (e) {
-      print("Erreur lors de la sauvegarde des IDs téléchargés: $e");
+      dev.log("Erreur lors de la sauvegarde des IDs téléchargés: $e");
     }
   }
 }

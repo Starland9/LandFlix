@@ -75,10 +75,10 @@ void main() async {
 final downloader = UQLoad(url: 'https://uqload.cx/embed-abc123def456.html');
 final info = await downloader.getVideoInfo();
 
-print('Titre: ${info.title}');
-print('Résolution: ${info.resolution}');
-print('Durée: ${info.duration}');
-print('Taille: ${sizeOfFmt(info.size)}');
+dev.log('Titre: ${info.title}');
+dev.log('Résolution: ${info.resolution}');
+dev.log('Durée: ${info.duration}');
+dev.log('Taille: ${sizeOfFmt(info.size)}');
 ```
 
 ### Interface en ligne de commande

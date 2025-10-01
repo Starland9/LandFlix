@@ -26,7 +26,7 @@ linter:
     prefer_const_literals_to_create_immutables: true # Example of enabling a lint rule
 
 
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
+    # avoid_dev.log: false  # Uncomment to disable the `avoid_dev.log` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
