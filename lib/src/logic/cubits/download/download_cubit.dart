@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -6,7 +9,38 @@ import '../../services/uqload_download_service.dart';
 part 'download_state.dart';
 
 class DownloadCubit extends Cubit<DownloadState> {
-  DownloadCubit() : super(DownloadInitial());
+  late final StreamSubscription<bd.TaskUpdate> _progressSubscription;
+
+  DownloadCubit() : super(DownloadInitial()) {
+    _progressSubscription = bd.FileDownloader().updates.listen((update) {
+      if (isClosed) return;
+
+      if (update is bd.TaskStatusUpdate) {
+        final status = update.status;
+        if (status == bd.TaskStatus.complete) {
+          emit(DownloadCompleted(update.task.filename));
+        } else if (status == bd.TaskStatus.failed ||
+            status == bd.TaskStatus.canceled ||
+            status == bd.TaskStatus.notFound) {
+          emit(DownloadError("Erreur de téléchargement : ${update.exception}"));
+        }
+      } else if (update is bd.TaskProgressUpdate) {
+        final progress = update.progress;
+        emit(
+          DownloadInProgress(
+            progress,
+            "Téléchargement en cours... ${(progress * 100).toInt()}%",
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _progressSubscription.cancel();
+    return super.close();
+  }
 
   /// Prépare un téléchargement en récupérant les informations de la vidéo
   Future<void> prepareDownload(String url) async {
@@ -35,7 +69,21 @@ class DownloadCubit extends Cubit<DownloadState> {
     }
   }
 
+  /// Starts a background download
+  Future<void> startBackgroundDownload(DownloadDetails details) async {
+    if (isClosed) return;
+    emit(const DownloadInProgress(0.0, "Mise en file d'attente..."));
+    try {
+      await UQLoadDownloadService.startBackgroundDownload(details: details);
+    } catch (e) {
+      if (!isClosed) {
+        emit(DownloadError("Erreur lors du lancement du téléchargement : $e"));
+      }
+    }
+  }
+
   /// Lance le téléchargement d'une vidéo
+  @Deprecated('Use startBackgroundDownload instead')
   Future<void> startDownload({
     required String url,
     String? outputFile,

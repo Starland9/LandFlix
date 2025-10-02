@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,7 +14,35 @@ typedef StatusCallback = void Function(String message);
 
 /// Service de téléchargement utilisant UQLoad Downloader
 class UQLoadDownloadService {
+  /// Starts a background download using the background_downloader package
+  static Future<void> startBackgroundDownload({
+    required DownloadDetails details,
+  }) async {
+    final videoUrl = details.videoInfo.url;
+    final uri = Uri.parse(videoUrl);
+
+    final task = bd.DownloadTask(
+      url: videoUrl,
+      filename: '${details.fileName}.mp4',
+      directory: details.downloadDir,
+      baseDirectory:
+          bd.BaseDirectory.root, // Use root for absolute paths on Android
+      updates: bd.Updates.statusAndProgress,
+      requiresWiFi: true,
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0',
+        'Referer': '${uri.scheme}://${uri.host}',
+      },
+      metaData:
+          details.videoInfo.url, // Use the video URL as a unique identifier
+    );
+
+    await bd.FileDownloader().enqueue(task);
+  }
+
   /// Télécharge une vidéo UQLoad avec suivi de progression
+  @Deprecated('Use startBackgroundDownload instead')
   static Future<String> downloadVideo({
     required String url,
     String? outputFile,
