@@ -82,9 +82,12 @@ jobs:
         run: |
           flutter config --enable-ios
           flutter precache --ios
+      
+      - name: Xcode Archive
+        run: xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release archive
 
       - name: Build iOS IPA (no codesign)
-        run: flutter build ipa --no-codesign --dart-define=API_URL=${API_URL}
+        run: flutter build ipa --release --dart-define=API_URL=${API_URL}
 
       - name: Collect iOS artifacts
         run: |
