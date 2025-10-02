@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:label="LandFlix"
@@ -33,6 +38,20 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <service
+            android:name="com.bbflight.background_downloader.DownloaderService"
+            android:exported="false">
+            <meta-data
+                android:name="com.bbflight.background_downloader.notification_channel_name"
+                android:value="Téléchargements LandFlix" />
+            <meta-data
+                android:name="com.bbflight.background_downloader.notification_channel_description"
+                android:value="Notifications de progression des téléchargements" />
+            <meta-data
+                android:name="com.bbflight.background_downloader.app_icon"
+                android:resource="@mipmap/launcher_icon" />
+        </service>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
