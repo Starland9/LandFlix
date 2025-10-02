@@ -11,8 +11,11 @@ part 'download_state.dart';
 class DownloadCubit extends Cubit<DownloadState> {
   late final StreamSubscription<bd.TaskUpdate> _progressSubscription;
 
+  static final Stream<bd.TaskUpdate> _updates = bd.FileDownloader().updates
+      .asBroadcastStream();
+
   DownloadCubit() : super(DownloadInitial()) {
-    _progressSubscription = bd.FileDownloader().updates.listen((update) {
+    _progressSubscription = _updates.listen((update) {
       if (isClosed) return;
 
       if (update is bd.TaskStatusUpdate) {
