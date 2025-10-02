@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
-import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
-import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
-import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/cubits/download/download_cubit.dart';
 import 'package:french_stream_downloader/src/logic/models/uqvideo.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
+import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
 
 class UqvideoWidget extends StatefulWidget {
   const UqvideoWidget({super.key, required this.uqvideo});
@@ -25,7 +25,7 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
   @override
   void initState() {
     super.initState();
-    _downloadCubit = DownloadCubit();
+    _downloadCubit = DownloadCubit(videoUrl: widget.uqvideo.htmlUrl);
     _checkIfDownloaded();
   }
 
@@ -357,17 +357,22 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
   }
 
   /// Lance le téléchargement avec UQLoad
-  void _startDownload() {
+  void _startDownload() async {
     // Utiliser l'URL htmlUrl du modèle Uqvideo pour UQLoad
     final uqloadUrl = widget.uqvideo.htmlUrl;
 
     if (UQLoadDownloadService.isValidUQLoadUrl(uqloadUrl)) {
-      _downloadCubit.startDownload(
-        url: uqloadUrl,
-        outputFile: UQLoadDownloadService.sanitizeFileName(
-          widget.uqvideo.title,
-        ),
-      );
+      try {
+        final details = await UQLoadDownloadService.prepareDownload(uqloadUrl);
+        _downloadCubit.startBackgroundDownload(details);
+      } catch (e) {
+        ModernToast.show(
+          context: context,
+          message: "Erreur lors de la préparation : $e",
+          type: ToastType.error,
+          title: "❌ Erreur",
+        );
+      }
     } else {
       ModernToast.show(
         context: context,

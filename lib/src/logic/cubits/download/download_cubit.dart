@@ -1,12 +1,49 @@
+import 'dart:async';
+
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../services/download_stream_service.dart';
 import '../../services/uqload_download_service.dart';
 
 part 'download_state.dart';
 
 class DownloadCubit extends Cubit<DownloadState> {
-  DownloadCubit() : super(DownloadInitial());
+  final String videoUrl;
+  late final StreamSubscription<bd.TaskUpdate> _progressSubscription;
+
+  DownloadCubit({required this.videoUrl}) : super(DownloadInitial()) {
+    _progressSubscription = DownloadStreamService.instance.updates.listen((
+      update,
+    ) {
+      if (isClosed || update.task.metaData != videoUrl) return;
+
+      if (update is bd.TaskStatusUpdate) {
+        final status = update.status;
+        if (status == bd.TaskStatus.enqueued) {
+          emit(const DownloadInProgress(0.0, "En file d'attente..."));
+        } else if (status == bd.TaskStatus.running) {
+          emit(const DownloadInProgress(0.0, "Démarrage..."));
+        } else if (status == bd.TaskStatus.complete) {
+          emit(DownloadCompleted(update.task.filename));
+        } else if (status == bd.TaskStatus.failed ||
+            status == bd.TaskStatus.canceled ||
+            status == bd.TaskStatus.notFound) {
+          emit(DownloadError("Erreur de téléchargement : ${update.exception}"));
+        }
+      } else if (update is bd.TaskProgressUpdate) {
+        final progress = update.progress;
+        emit(DownloadInProgress(progress, "Téléchargement en cours..."));
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _progressSubscription.cancel();
+    return super.close();
+  }
 
   /// Prépare un téléchargement en récupérant les informations de la vidéo
   Future<void> prepareDownload(String url) async {
@@ -35,47 +72,15 @@ class DownloadCubit extends Cubit<DownloadState> {
     }
   }
 
-  /// Lance le téléchargement d'une vidéo
-  Future<void> startDownload({
-    required String url,
-    String? outputFile,
-    String? outputDir,
-  }) async {
+  /// Starts a background download
+  Future<void> startBackgroundDownload(DownloadDetails details) async {
     if (isClosed) return;
-
-    emit(const DownloadInProgress(0.0, "Initialisation..."));
-
+    emit(const DownloadInProgress(0.0, "Mise en file d'attente..."));
     try {
-      final filePath = await UQLoadDownloadService.downloadVideo(
-        url: url,
-        outputFile: outputFile,
-        outputDir: outputDir,
-        onProgress: (downloaded, total) {
-          if (!isClosed && total > 0) {
-            final progress = downloaded / total;
-            final percentString = "${(progress * 100).toInt()}%";
-            emit(
-              DownloadInProgress(
-                progress,
-                "Téléchargement en cours... $percentString",
-              ),
-            );
-          }
-        },
-        onStatus: (message) {
-          if (!isClosed && state is DownloadInProgress) {
-            final currentState = state as DownloadInProgress;
-            emit(DownloadInProgress(currentState.progress, message));
-          }
-        },
-      );
-
-      if (!isClosed) {
-        emit(DownloadCompleted(filePath));
-      }
+      await UQLoadDownloadService.startBackgroundDownload(details: details);
     } catch (e) {
       if (!isClosed) {
-        emit(DownloadError("Erreur lors du téléchargement : $e"));
+        emit(DownloadError("Erreur lors du lancement du téléchargement : $e"));
       }
     }
   }
@@ -120,6 +125,7 @@ class DownloadCubit extends Cubit<DownloadState> {
         downloadPath: '$downloadDir/$fileName.mp4',
         fileName: fileName,
         downloadDir: downloadDir,
+        htmlUrl: url,
       );
 
       if (!isClosed) {

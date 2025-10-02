@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
-import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
@@ -13,59 +13,31 @@ typedef StatusCallback = void Function(String message);
 
 /// Service de téléchargement utilisant UQLoad Downloader
 class UQLoadDownloadService {
-  /// Télécharge une vidéo UQLoad avec suivi de progression
-  static Future<String> downloadVideo({
-    required String url,
-    String? outputFile,
-    String? outputDir,
-    ProgressCallback? onProgress,
-    StatusCallback? onStatus,
+  /// Starts a background download using the background_downloader package
+  static Future<void> startBackgroundDownload({
+    required DownloadDetails details,
   }) async {
-    try {
-      // Obtenir le dossier de téléchargement par défaut si non spécifié
-      String finalOutputDir = outputDir ?? await getDefaultDownloadDirectory();
+    final videoUrl = details.videoInfo.url;
+    final uri = Uri.parse(videoUrl);
 
-      onStatus?.call("Initialisation du téléchargement...");
+    final task = bd.DownloadTask(
+      url: videoUrl,
+      filename: '${details.fileName}.mp4',
+      directory: details.downloadDir,
+      baseDirectory:
+          bd.BaseDirectory.root, // Use root for absolute paths on Android
+      updates: bd.Updates.statusAndProgress,
+      requiresWiFi: false, // Allow downloads on mobile data
+      allowPause: true, // Allow pausing downloads
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0',
+        'Referer': '${uri.scheme}://${uri.host}',
+      },
+      metaData: details.htmlUrl, // Use the HTML URL as a unique identifier
+    );
 
-      // Créer l'instance UQLoad avec callback de progression
-      final downloader = UQLoad(
-        url: url,
-        outputDir: finalOutputDir,
-        outputFile: outputFile,
-        onProgressCallback: onProgress,
-      );
-
-      onStatus?.call("Récupération des informations de la vidéo...");
-
-      // Récupérer les informations de la vidéo
-      final videoInfo = await downloader.getVideoInfo();
-
-      onStatus?.call("Démarrage du téléchargement : ${videoInfo.title}");
-
-      // Lancer le téléchargement
-      await downloader.download();
-
-      // Construire le chemin final du fichier
-      final fileName = outputFile ?? sanitizeFileName(videoInfo.title);
-      final finalPath = '$finalOutputDir/$fileName.mp4';
-
-      onStatus?.call("Enregistrement du téléchargement...");
-
-      // Enregistrer le téléchargement dans le gestionnaire
-      await DownloadManager.instance.recordDownload(
-        videoInfo: videoInfo,
-        filePath: finalPath,
-        originalUrl: url,
-      );
-
-      onStatus?.call("Téléchargement terminé avec succès !");
-
-      return finalPath;
-    } catch (e) {
-      final errorMessage = "Erreur lors du téléchargement : $e";
-      onStatus?.call(errorMessage);
-      throw Exception(errorMessage);
-    }
+    await bd.FileDownloader().enqueue(task);
   }
 
   /// Récupère les informations d'une vidéo UQLoad sans la télécharger
@@ -144,6 +116,7 @@ class UQLoadDownloadService {
       downloadPath: filePath,
       fileName: fileName,
       downloadDir: downloadDir,
+      htmlUrl: url,
     );
   }
 }
@@ -154,12 +127,14 @@ class DownloadDetails {
   final String downloadPath;
   final String fileName;
   final String downloadDir;
+  final String htmlUrl;
 
   DownloadDetails({
     required this.videoInfo,
     required this.downloadPath,
     required this.fileName,
     required this.downloadDir,
+    required this.htmlUrl,
   });
 
   String get formattedSize =>
