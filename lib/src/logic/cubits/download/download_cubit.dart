@@ -4,6 +4,7 @@ import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../services/download_stream_service.dart';
 import '../../services/uqload_download_service.dart';
 
 part 'download_state.dart';
@@ -12,11 +13,10 @@ class DownloadCubit extends Cubit<DownloadState> {
   final String videoUrl;
   late final StreamSubscription<bd.TaskUpdate> _progressSubscription;
 
-  static final Stream<bd.TaskUpdate> _updates = bd.FileDownloader().updates
-      .asBroadcastStream();
-
   DownloadCubit({required this.videoUrl}) : super(DownloadInitial()) {
-    _progressSubscription = _updates.listen((update) {
+    _progressSubscription = DownloadStreamService.instance.updates.listen((
+      update,
+    ) {
       if (isClosed || update.task.metaData != videoUrl) return;
 
       if (update is bd.TaskStatusUpdate) {
