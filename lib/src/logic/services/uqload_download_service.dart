@@ -27,7 +27,8 @@ class UQLoadDownloadService {
       baseDirectory:
           bd.BaseDirectory.root, // Use root for absolute paths on Android
       updates: bd.Updates.statusAndProgress,
-      requiresWiFi: true,
+      requiresWiFi: false, // Allow downloads on mobile data
+      allowPause: true, // Allow pausing downloads
       headers: {
         'User-Agent':
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0',

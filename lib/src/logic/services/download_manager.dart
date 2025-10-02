@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
@@ -21,6 +22,19 @@ class DownloadManager {
 
   /// Initialise le gestionnaire en chargeant les données
   Future<void> initialize() async {
+    // Configure FileDownloader pour autoriser plusieurs téléchargements simultanés
+    bd.FileDownloader()
+        .configure(
+          globalConfig: [
+            (bd.Config.requestTimeout, const Duration(seconds: 100)),
+          ],
+          androidConfig: [(bd.Config.useCacheDir, bd.Config.never)],
+          iOSConfig: [
+            (bd.Config.localize, {'Cancel': 'Annuler', 'Pause': 'Pause'}),
+          ],
+        )
+        .then((result) => dev.log('FileDownloader configured: $result'));
+
     await _loadDownloads();
     await _loadDownloadedIds();
   }
