@@ -41,8 +41,9 @@ class _DownloadsScreenState extends State<DownloadsScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
-    _loadDownloads();
     _setupDownloadListener();
+    _loadDownloads();
+    _loadActiveDownloads();
   }
 
   @override
@@ -90,6 +91,34 @@ class _DownloadsScreenState extends State<DownloadsScreen>
       _isLoading = false;
     });
     _fadeController.forward();
+  }
+
+  Future<void> _loadActiveDownloads() async {
+    try {
+      // Récupérer tous les enregistrements de tâches actives
+      final records = await bd.FileDownloader().database.allRecords();
+
+      if (!mounted) return;
+
+      setState(() {
+        for (final record in records) {
+          final task = record.task;
+          if (task.metaData.isNotEmpty) {
+            // Ajouter seulement les tâches non terminées
+            if (record.status != bd.TaskStatus.complete &&
+                record.status != bd.TaskStatus.failed &&
+                record.status != bd.TaskStatus.canceled &&
+                record.status != bd.TaskStatus.notFound) {
+              _activeDownloads[task.metaData] = record.status;
+              _downloadProgress[task.metaData] = record.progress;
+            }
+          }
+        }
+      });
+    } catch (e) {
+      // Ignorer les erreurs de chargement
+      debugPrint('Erreur lors du chargement des téléchargements actifs: $e');
+    }
   }
 
   Future<void> _deleteDownload(DownloadItem download) async {
