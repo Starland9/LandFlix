@@ -263,10 +263,11 @@ jobs:
           flutter build windows --release --dart-define="API_URL=$Env:API_URL"
 
       - name: Ensure Windows release build exists
+        shell: pwsh
         run: |
           if (!(Test-Path "build/windows/x64/runner/Release")) {
-          Write-Error "Release directory not found. Make sure the build step completed successfully."
-          exit 1
+            Write-Error "Release directory not found. Make sure the build step completed successfully."
+            exit 1
           }
 
       - name: Package Windows app
@@ -302,6 +303,15 @@ jobs:
         run: |
           ls -R release-artifacts
 
+      - name: Gather release files
+        run: |
+          mkdir -p release-zips
+          find release-artifacts -type f \( -name '*.zip' -o -name '*.ipa' -o -name '*.apk' \) -exec cp {} release-zips/ \;
+
+      - name: List packaged release files
+        run: |
+          ls -R release-zips
+
       - name: Create or update dev release
         uses: ncipollo/release-action@v1
         with:
@@ -310,5 +320,5 @@ jobs:
           body: "Automated build from branch dev (commit ${{ github.sha }})."
           prerelease: true
           allowUpdates: true
-          artifacts: release-artifacts/**/*
+          artifacts: release-zips/*
           artifactErrorsFailBuild: true
