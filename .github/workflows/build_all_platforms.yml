@@ -264,7 +264,7 @@ jobs:
 
             - name: Ensure Windows release build exists
               run: |
-                if (!(Test-Path "build/windows/runner/Release")) {
+                if (!(Test-Path "build/windows/x64/runner/Release")) {
                 Write-Error "Release directory not found. Make sure the build step completed successfully."
                 exit 1
                 }
@@ -287,10 +287,10 @@ jobs:
         runs-on: ubuntu-latest
         needs:
             - build-android
-            - build-ios
+            # - build-ios
             - build-web
             - build-linux
-            - build-macos
+            # - build-macos
             - build-windows
         steps:
             - name: Download artifacts
