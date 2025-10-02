@@ -25,7 +25,7 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
   @override
   void initState() {
     super.initState();
-    _downloadCubit = DownloadCubit();
+    _downloadCubit = DownloadCubit(videoUrl: widget.uqvideo.htmlUrl);
     _checkIfDownloaded();
   }
 
