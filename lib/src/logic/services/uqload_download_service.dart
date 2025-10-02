@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
-import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
@@ -39,62 +38,6 @@ class UQLoadDownloadService {
     );
 
     await bd.FileDownloader().enqueue(task);
-  }
-
-  /// Télécharge une vidéo UQLoad avec suivi de progression
-  @Deprecated('Use startBackgroundDownload instead')
-  static Future<String> downloadVideo({
-    required String url,
-    String? outputFile,
-    String? outputDir,
-    ProgressCallback? onProgress,
-    StatusCallback? onStatus,
-  }) async {
-    try {
-      // Obtenir le dossier de téléchargement par défaut si non spécifié
-      String finalOutputDir = outputDir ?? await getDefaultDownloadDirectory();
-
-      onStatus?.call("Initialisation du téléchargement...");
-
-      // Créer l'instance UQLoad avec callback de progression
-      final downloader = UQLoad(
-        url: url,
-        outputDir: finalOutputDir,
-        outputFile: outputFile,
-        onProgressCallback: onProgress,
-      );
-
-      onStatus?.call("Récupération des informations de la vidéo...");
-
-      // Récupérer les informations de la vidéo
-      final videoInfo = await downloader.getVideoInfo();
-
-      onStatus?.call("Démarrage du téléchargement : ${videoInfo.title}");
-
-      // Lancer le téléchargement
-      await downloader.download();
-
-      // Construire le chemin final du fichier
-      final fileName = outputFile ?? sanitizeFileName(videoInfo.title);
-      final finalPath = '$finalOutputDir/$fileName.mp4';
-
-      onStatus?.call("Enregistrement du téléchargement...");
-
-      // Enregistrer le téléchargement dans le gestionnaire
-      await DownloadManager.instance.recordDownload(
-        videoInfo: videoInfo,
-        filePath: finalPath,
-        originalUrl: url,
-      );
-
-      onStatus?.call("Téléchargement terminé avec succès !");
-
-      return finalPath;
-    } catch (e) {
-      final errorMessage = "Erreur lors du téléchargement : $e";
-      onStatus?.call(errorMessage);
-      throw Exception(errorMessage);
-    }
   }
 
   /// Récupère les informations d'une vidéo UQLoad sans la télécharger

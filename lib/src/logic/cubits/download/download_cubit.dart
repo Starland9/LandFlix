@@ -82,52 +82,6 @@ class DownloadCubit extends Cubit<DownloadState> {
     }
   }
 
-  /// Lance le téléchargement d'une vidéo
-  @Deprecated('Use startBackgroundDownload instead')
-  Future<void> startDownload({
-    required String url,
-    String? outputFile,
-    String? outputDir,
-  }) async {
-    if (isClosed) return;
-
-    emit(const DownloadInProgress(0.0, "Initialisation..."));
-
-    try {
-      final filePath = await UQLoadDownloadService.downloadVideo(
-        url: url,
-        outputFile: outputFile,
-        outputDir: outputDir,
-        onProgress: (downloaded, total) {
-          if (!isClosed && total > 0) {
-            final progress = downloaded / total;
-            final percentString = "${(progress * 100).toInt()}%";
-            emit(
-              DownloadInProgress(
-                progress,
-                "Téléchargement en cours... $percentString",
-              ),
-            );
-          }
-        },
-        onStatus: (message) {
-          if (!isClosed && state is DownloadInProgress) {
-            final currentState = state as DownloadInProgress;
-            emit(DownloadInProgress(currentState.progress, message));
-          }
-        },
-      );
-
-      if (!isClosed) {
-        emit(DownloadCompleted(filePath));
-      }
-    } catch (e) {
-      if (!isClosed) {
-        emit(DownloadError("Erreur lors du téléchargement : $e"));
-      }
-    }
-  }
-
   /// Annule le téléchargement en cours
   void cancelDownload() {
     if (!isClosed) {
