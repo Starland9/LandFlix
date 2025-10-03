@@ -26,7 +26,7 @@ class ErrorStateWidget extends StatelessWidget {
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.error.withOpacity(0.3),
+                  color: AppColors.error.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),

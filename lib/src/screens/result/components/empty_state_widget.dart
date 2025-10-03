@@ -19,7 +19,7 @@ class EmptyStateWidget extends StatelessWidget {
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(60),
                 border: Border.all(
-                  color: AppColors.primaryPurple.withOpacity(0.3),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
