@@ -5,6 +5,7 @@ import 'package:french_stream_downloader/src/logic/cubits/download/download_cubi
 import 'package:french_stream_downloader/src/logic/models/uqvideo.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/logic/services/wishlist_manager.dart';
 import 'package:french_stream_downloader/src/shared/components/downloaded_badge.dart';
 import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
 
@@ -21,12 +22,20 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
   late DownloadCubit _downloadCubit;
   bool isPreparing = false;
   bool _isAlreadyDownloaded = false;
+  late final WishlistManager _wishlistManager;
+  late final VoidCallback _wishlistListener;
+  bool _isInWishlist = false;
+  bool _isUpdatingWishlist = false;
 
   @override
   void initState() {
     super.initState();
     _downloadCubit = DownloadCubit(videoUrl: widget.uqvideo.htmlUrl);
+    _wishlistManager = WishlistManager.instance;
+    _wishlistListener = _handleWishlistChanged;
+    _wishlistManager.wishlistNotifier.addListener(_wishlistListener);
     _checkIfDownloaded();
+    _handleWishlistChanged();
   }
 
   void _checkIfDownloaded() {
@@ -35,8 +44,19 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     );
   }
 
+  void _handleWishlistChanged() {
+    final saved = _wishlistManager.contains(widget.uqvideo.htmlUrl);
+    if (!mounted) return;
+    if (saved != _isInWishlist) {
+      setState(() {
+        _isInWishlist = saved;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _wishlistManager.wishlistNotifier.removeListener(_wishlistListener);
     _downloadCubit.close();
     super.dispose();
   }
@@ -112,7 +132,14 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
 
                 const SizedBox(width: 16),
                 // Bouton d'action
-                _buildActionButton(),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildWishlistButton(),
+                    const SizedBox(height: 12),
+                    _buildDownloadButton(),
+                  ],
+                ),
               ],
             ),
           ),
@@ -261,7 +288,7 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     );
   }
 
-  Widget _buildActionButton() {
+  Widget _buildDownloadButton() {
     return BlocBuilder<DownloadCubit, DownloadState>(
       builder: (context, state) {
         if (state is DownloadInProgress) {
@@ -320,6 +347,41 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     );
   }
 
+  Widget _buildWishlistButton() {
+    final isDisabled = _isUpdatingWishlist;
+    final icon = _isInWishlist
+        ? Icons.favorite_rounded
+        : Icons.favorite_outline_rounded;
+    final color = _isInWishlist ? AppColors.primaryPurple : Colors.white;
+
+    return Tooltip(
+      message: _isInWishlist ? 'Retirer de ma liste' : 'Ajouter à ma liste',
+      child: InkWell(
+        onTap: isDisabled ? null : _toggleWishlist,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.darkSurfaceVariant.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _isInWishlist
+                  ? AppColors.primaryPurple.withValues(alpha: 0.4)
+                  : AppColors.darkSurfaceVariant.withValues(alpha: 0.4),
+            ),
+          ),
+          child: isDisabled
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: CircularProgressIndicator.adaptive(strokeWidth: 2.4),
+                )
+              : Icon(icon, color: color, size: 24),
+        ),
+      ),
+    );
+  }
+
   /// Lance le téléchargement avec UQLoad
   void _startDownload() async {
     // Utiliser l'URL htmlUrl du modèle Uqvideo pour UQLoad
@@ -357,6 +419,40 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
         type: ToastType.error,
         title: "❌ Erreur",
       );
+    }
+  }
+
+  Future<void> _toggleWishlist() async {
+    setState(() {
+      _isUpdatingWishlist = true;
+    });
+
+    final wasSaved = _isInWishlist;
+    try {
+      await _wishlistManager.toggle(widget.uqvideo);
+      if (!mounted) return;
+      final added = !wasSaved;
+      ModernToast.show(
+        context: context,
+        message: added
+            ? 'Ajouté à votre liste avec succès.'
+            : 'Retiré de votre liste.',
+        type: added ? ToastType.success : ToastType.info,
+        title: added ? '❤️ Ajouté' : '💔 Retiré',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ModernToast.show(
+        context: context,
+        message: 'Impossible de mettre à jour la liste : $e',
+        type: ToastType.error,
+        title: '❌ Erreur',
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isUpdatingWishlist = false;
+      });
     }
   }
 }

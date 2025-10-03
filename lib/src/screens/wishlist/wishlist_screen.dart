@@ -1,8 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/models/wishlist_item.dart';
+import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/logic/services/wishlist_manager.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/components/wishlist_collection_view.dart';
+import 'package:french_stream_downloader/src/screens/wishlist/components/wishlist_empty_state.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/components/wishlist_header.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Page listant les contenus enregistrés par l’utilisateur.
 @RoutePage()
@@ -18,12 +24,13 @@ class _WishlistScreenState extends State<WishlistScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-  // TODO(starland): brancher un vrai service de persistance.
-  final List<String> _wishlistItems = [];
+  late final WishlistManager _wishlistManager;
+  final Set<String> _downloadingIds = <String>{};
 
   @override
   void initState() {
     super.initState();
+    _wishlistManager = WishlistManager.instance;
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -64,12 +71,25 @@ class _WishlistScreenState extends State<WishlistScreen>
 
                 // Contenu principal : affiche les favoris (ou l’état vide si nécessaire).
                 Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: WishlistCollectionView(
-                      key: ValueKey<int>(_wishlistItems.length),
-                      items: _wishlistItems,
-                    ),
+                  child: ValueListenableBuilder<List<WishlistItem>>(
+                    valueListenable: _wishlistManager.wishlistNotifier,
+                    builder: (context, items, _) {
+                      final child = items.isEmpty
+                          ? const WishlistEmptyState()
+                          : WishlistCollectionView(
+                              key: ValueKey<int>(items.length),
+                              items: items,
+                              downloadingIds: _downloadingIds,
+                              onRemove: _removeWishlistItem,
+                              onDownload: _downloadWishlistItem,
+                              onOpen: _openWishlistItem,
+                            );
+
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: child,
+                      );
+                    },
                   ),
                 ),
               ],
@@ -78,5 +98,69 @@ class _WishlistScreenState extends State<WishlistScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _removeWishlistItem(WishlistItem item) async {
+    await _wishlistManager.remove(item.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('“${item.title}” retiré de votre liste.')),
+    );
+  }
+
+  Future<void> _downloadWishlistItem(WishlistItem item) async {
+    if (DownloadManager.instance.isDownloaded(item.htmlUrl)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('“${item.title}” est déjà téléchargé.')),
+      );
+      return;
+    }
+
+    if (_downloadingIds.contains(item.id)) {
+      return;
+    }
+
+    setState(() {
+      _downloadingIds.add(item.id);
+    });
+
+    try {
+      final details = await UQLoadDownloadService.prepareDownload(item.htmlUrl);
+      await UQLoadDownloadService.startBackgroundDownload(details: details);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Téléchargement lancé pour “${item.title}”.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Impossible de lancer le téléchargement : $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _downloadingIds.remove(item.id);
+      });
+    }
+  }
+
+  Future<void> _openWishlistItem(WishlistItem item) async {
+    final uri = Uri.parse(item.htmlUrl);
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Impossible d’ouvrir “${item.title}”.')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l’ouverture : $e')),
+      );
+    }
   }
 }
