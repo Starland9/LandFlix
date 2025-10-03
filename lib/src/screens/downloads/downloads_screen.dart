@@ -572,6 +572,10 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                           emptyLabel:
                               'Aucun téléchargement terminé pour le moment.',
                           emptyIcon: Icons.save_alt_rounded,
+                          emptyDescription:
+                              'Dès qu’un téléchargement est finalisé, il apparaîtra automatiquement ici.',
+                          emptyTip:
+                              'Astuce : Laissez vos téléchargements se terminer pour les retrouver hors ligne.',
                         ),
                       ),
                       _buildRefreshableTab(
@@ -584,6 +588,10 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                           emptyLabel:
                               'Aucun téléchargement supprimé à afficher.',
                           emptyIcon: Icons.delete_sweep_rounded,
+                          emptyDescription:
+                              'Les téléchargements que vous supprimez seront listés ici pour consultation rapide.',
+                          emptyTip:
+                              'Astuce : Utilisez l’icône corbeille pour déplacer un élément dans cette section.',
                         ),
                       ),
                     ],

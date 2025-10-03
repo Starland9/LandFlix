@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/download_card.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/empty_state.dart';
 
 /// Liste générique de téléchargements persistés (terminés ou supprimés).
 class DownloadItemsList extends StatelessWidget {
@@ -9,6 +10,8 @@ class DownloadItemsList extends StatelessWidget {
   final ValueChanged<DownloadItem> onDelete;
   final String emptyLabel;
   final IconData emptyIcon;
+  final String emptyDescription;
+  final String? emptyTip;
 
   const DownloadItemsList({
     super.key,
@@ -17,6 +20,8 @@ class DownloadItemsList extends StatelessWidget {
     required this.onDelete,
     required this.emptyLabel,
     required this.emptyIcon,
+    required this.emptyDescription,
+    this.emptyTip,
   });
 
   @override
@@ -26,7 +31,12 @@ class DownloadItemsList extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          _EmptyDownloadPlaceholder(label: emptyLabel, icon: emptyIcon),
+          _EmptyDownloadPlaceholder(
+            label: emptyLabel,
+            description: emptyDescription,
+            icon: emptyIcon,
+            tip: emptyTip,
+          ),
         ],
       );
     }
@@ -49,32 +59,24 @@ class DownloadItemsList extends StatelessWidget {
 
 class _EmptyDownloadPlaceholder extends StatelessWidget {
   final String label;
+  final String description;
   final IconData icon;
+  final String? tip;
 
-  const _EmptyDownloadPlaceholder({required this.label, required this.icon});
+  const _EmptyDownloadPlaceholder({
+    required this.label,
+    required this.description,
+    required this.icon,
+    this.tip,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 56,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return DownloadsEmptyContent(
+      icon: icon,
+      title: label,
+      description: description,
+      tip: tip,
     );
   }
 }

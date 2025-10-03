@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/screens/downloads/components/active_download_card.dart';
 import 'package:french_stream_downloader/src/logic/models/active_download_info.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/active_download_card.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/empty_state.dart';
 
 /// Liste verticale des téléchargements actifs en cours de traitement.
 class ActiveDownloadsList extends StatelessWidget {
@@ -52,31 +53,12 @@ class _EmptyActiveDownloadPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.downloading_rounded,
-              size: 56,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Aucun téléchargement actif',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Lancez un nouveau téléchargement pour le voir apparaître ici.',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return const DownloadsEmptyContent(
+      icon: Icons.downloading_rounded,
+      title: 'Aucun téléchargement actif',
+      description:
+          'Lancez un nouveau téléchargement pour le voir apparaître ici.',
+      tip: 'Astuce : Utilisez le bouton "Télécharger" sur une fiche vidéo.',
     );
   }
 }

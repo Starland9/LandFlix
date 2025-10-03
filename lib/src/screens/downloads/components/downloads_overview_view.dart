@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:french_stream_downloader/src/logic/models/active_download_info.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/active_download_card.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/download_card.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/empty_state.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/section_header.dart';
-import 'package:french_stream_downloader/src/logic/models/active_download_info.dart';
 
 /// Vue d’ensemble mixant téléchargements actifs, terminés et supprimés.
 class DownloadsOverviewView extends StatelessWidget {
@@ -91,24 +92,12 @@ class _OverviewEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.inbox_rounded,
-            size: 56,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Aucun téléchargement enregistré pour le moment.",
-            style: Theme.of(context).textTheme.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return const DownloadsEmptyContent(
+      icon: Icons.inbox_rounded,
+      title: 'Aucun téléchargement enregistré pour le moment.',
+      description:
+          'Commencez un téléchargement et suivez sa progression dans cette vue.',
+      tip: 'Astuce : Utilisez la recherche pour ajouter un nouveau contenu.',
     );
   }
 }
