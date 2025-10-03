@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
@@ -5,6 +6,8 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
+import 'package:french_stream_downloader/src/logic/services/download_stream_service.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
@@ -21,6 +24,7 @@ class DownloadManager {
   final ValueNotifier<List<DownloadItem>> downloadsNotifier = ValueNotifier([]);
   List<DownloadItem> _downloads = [];
   Set<String> _downloadedIds = {};
+  StreamSubscription<bd.TaskUpdate>? _taskUpdatesSubscription;
 
   /// Initialise le gestionnaire en chargeant les données
   Future<void> initialize() async {
@@ -39,6 +43,7 @@ class DownloadManager {
 
     await _loadDownloads();
     await _loadDownloadedIds();
+    _listenToTaskUpdates();
   }
 
   /// Ajoute un téléchargement terminé
@@ -222,5 +227,75 @@ class DownloadManager {
     } catch (e) {
       dev.log("Erreur lors de la sauvegarde des IDs téléchargés: $e");
     }
+  }
+
+  void _listenToTaskUpdates() {
+    _taskUpdatesSubscription ??= DownloadStreamService.instance.updates.listen(
+      (update) async {
+        final task = update.task;
+        if (task is! bd.DownloadTask) return;
+
+        final url = task.metaData.trim().isNotEmpty
+            ? task.metaData.trim()
+            : task.url;
+
+        if (url.isEmpty) return;
+
+        if (update is bd.TaskStatusUpdate &&
+            update.status == bd.TaskStatus.complete) {
+          await _handleTaskCompleted(task, url);
+        }
+      },
+      onError: (error, stack) => dev.log(
+        'Erreur flux téléchargements (manager)',
+        error: error,
+        stackTrace: stack,
+      ),
+    );
+  }
+
+  Future<void> _handleTaskCompleted(bd.DownloadTask task, String url) async {
+    if (isDownloaded(url)) {
+      return;
+    }
+
+    try {
+      final videoInfo = await UQLoadDownloadService.getVideoInfo(url);
+      final filePath = _resolveFilePath(task);
+      if (filePath == null) {
+        dev.log(
+          'Chemin de fichier introuvable pour un téléchargement terminé',
+          error: {'url': url, 'taskId': task.taskId},
+        );
+        return;
+      }
+
+      await recordDownload(
+        videoInfo: videoInfo,
+        filePath: filePath,
+        originalUrl: url,
+      );
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de l’enregistrement automatique du téléchargement',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+  }
+
+  String? _resolveFilePath(bd.DownloadTask task) {
+    final directory = task.directory;
+    final filename = task.filename;
+
+    if (directory.isEmpty || filename.isEmpty) {
+      return null;
+    }
+
+    final normalizedDirectory = directory.endsWith('/')
+        ? directory.substring(0, directory.length - 1)
+        : directory;
+
+    return '$normalizedDirectory/$filename';
   }
 }

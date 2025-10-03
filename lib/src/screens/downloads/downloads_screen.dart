@@ -212,6 +212,11 @@ class _DownloadsScreenState extends State<DownloadsScreen>
 
   /// Enregistre un téléchargement complété dans la base puis nettoie l'état actif.
   Future<void> _onTaskCompleted(bd.DownloadTask task, String url) async {
+    if (_downloadManager.isDownloaded(url)) {
+      _removeActiveDownload(url);
+      return;
+    }
+
     final entry = _activeDownloads[url];
 
     VideoInfo? videoInfo = entry?.videoInfo;
