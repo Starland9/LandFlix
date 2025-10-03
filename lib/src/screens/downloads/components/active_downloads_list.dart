@@ -30,7 +30,7 @@ class ActiveDownloadsList extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 24),
       itemCount: downloads.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 0),
+      separatorBuilder: (_, _) => const SizedBox(height: 0),
       itemBuilder: (context, index) {
         final download = downloads[index];
         return ActiveDownloadCard(

@@ -530,9 +530,10 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest.withOpacity(0.35),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: _buildTabBar(context),
@@ -617,7 +618,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
       tabAlignment: TabAlignment.start,
       labelPadding: const EdgeInsets.symmetric(horizontal: 16),
       indicator: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.14),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(12),
       ),
       indicatorSize: TabBarIndicatorSize.tab,

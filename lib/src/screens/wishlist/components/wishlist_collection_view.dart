@@ -175,7 +175,7 @@ class _WishlistCard extends StatelessWidget {
             child: Image.network(
               item.imageUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _thumbnailFallback(),
+              errorBuilder: (_, _, _) => _thumbnailFallback(),
             ),
           ),
         ),

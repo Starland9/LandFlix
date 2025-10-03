@@ -137,10 +137,11 @@ class _WishlistScreenState extends State<WishlistScreen>
         SnackBar(content: Text('Impossible de lancer le téléchargement : $e')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _downloadingIds.remove(item.id);
-      });
+      if (mounted) {
+        setState(() {
+          _downloadingIds.remove(item.id);
+        });
+      }
     }
   }
 

@@ -449,10 +449,11 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
         title: '❌ Erreur',
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isUpdatingWishlist = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isUpdatingWishlist = false;
+        });
+      }
     }
   }
 }
