@@ -94,18 +94,21 @@ class _DownloadsScreenState extends State<DownloadsScreen>
       final Map<String, _ActiveDownloadInfo> updated = {};
 
       for (final task in tasks) {
-        final metaData = task.metaData.trim();
-        final url = metaData.isNotEmpty ? metaData : task.url;
+        if (task is! bd.DownloadTask) continue;
+        final downloadTask = task;
+        final metaData = downloadTask.metaData.trim();
+        final url = metaData.isNotEmpty ? metaData : downloadTask.url;
         if (url.isEmpty) continue;
 
         final existing = _activeDownloads[url];
         final info = _ActiveDownloadInfo(
           url: url,
-          title: existing?.title ?? _titleFromTask(task),
+          title: existing?.title ?? _titleFromTask(downloadTask),
           progress: existing?.progress ?? 0,
           status: existing?.status ?? bd.TaskStatus.enqueued,
-          taskId: task.taskId,
+          taskId: downloadTask.taskId,
           videoInfo: existing?.videoInfo,
+          task: downloadTask,
         );
 
         updated[url] = info;
@@ -129,24 +132,32 @@ class _DownloadsScreenState extends State<DownloadsScreen>
   }
 
   void _handleTaskUpdate(bd.TaskUpdate update) {
-    final metaData = update.task.metaData.trim();
-    final url = metaData.isNotEmpty ? metaData : update.task.url;
+    final task = update.task;
+    if (task is! bd.DownloadTask) return;
+    final downloadTask = task;
+
+    final metaData = downloadTask.metaData.trim();
+    final url = metaData.isNotEmpty ? metaData : downloadTask.url;
 
     if (url.isEmpty) return;
 
     if (update is bd.TaskProgressUpdate) {
       _upsertActiveDownload(
         url: url,
-        task: update.task,
+        task: downloadTask,
         status: bd.TaskStatus.running,
         progress: update.progress,
       );
     } else if (update is bd.TaskStatusUpdate) {
-      _upsertActiveDownload(url: url, task: update.task, status: update.status);
+      _upsertActiveDownload(
+        url: url,
+        task: downloadTask,
+        status: update.status,
+      );
 
       switch (update.status) {
         case bd.TaskStatus.complete:
-          _onTaskCompleted(update.task, url);
+          _onTaskCompleted(downloadTask, url);
           break;
         case bd.TaskStatus.failed:
         case bd.TaskStatus.canceled:
@@ -161,7 +172,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
 
   void _upsertActiveDownload({
     required String url,
-    required bd.Task task,
+    required bd.DownloadTask task,
     bd.TaskStatus? status,
     double? progress,
   }) {
@@ -181,11 +192,13 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                     status: bd.TaskStatus.enqueued,
                     taskId: task.taskId,
                     videoInfo: null,
+                    task: task,
                   ))
               .copyWith(
                 progress: normalizedProgress,
                 status: status ?? existing?.status,
                 taskId: task.taskId,
+                task: task,
               );
     });
 
@@ -210,7 +223,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
     _updateEmptyState();
   }
 
-  Future<void> _onTaskCompleted(bd.Task task, String url) async {
+  Future<void> _onTaskCompleted(bd.DownloadTask task, String url) async {
     final entry = _activeDownloads[url];
 
     VideoInfo? videoInfo = entry?.videoInfo;
@@ -297,7 +310,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
     }
   }
 
-  String _titleFromTask(bd.Task task) {
+  String _titleFromTask(bd.DownloadTask task) {
     String filename = task.filename;
     if (filename.isEmpty) {
       filename = 'Téléchargement';
@@ -308,7 +321,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
     return formatted.isEmpty ? 'Téléchargement' : formatted;
   }
 
-  String? _resolveFilePath(bd.Task task) {
+  String? _resolveFilePath(bd.DownloadTask task) {
     final directory = task.directory;
     final filename = task.filename;
 
@@ -372,6 +385,55 @@ class _DownloadsScreenState extends State<DownloadsScreen>
       ),
     );
     _updateEmptyState();
+  }
+
+  Future<void> _togglePauseResume(_ActiveDownloadInfo info) async {
+    if (info.status != bd.TaskStatus.running &&
+        info.status != bd.TaskStatus.paused) {
+      return;
+    }
+
+    final downloader = bd.FileDownloader();
+
+    try {
+      if (info.status == bd.TaskStatus.paused) {
+        await downloader.resume(info.task);
+        if (!mounted) return;
+        _upsertActiveDownload(
+          url: info.url,
+          task: info.task,
+          status: bd.TaskStatus.running,
+          progress: info.progress,
+        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Téléchargement repris.')));
+      } else {
+        await downloader.pause(info.task);
+        if (!mounted) return;
+        _upsertActiveDownload(
+          url: info.url,
+          task: info.task,
+          status: bd.TaskStatus.paused,
+          progress: info.progress,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Téléchargement mis en pause.')),
+        );
+      }
+    } catch (e, stack) {
+      dev.log(
+        'Erreur pause/reprise du téléchargement',
+        error: e,
+        stackTrace: stack,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Action indisponible pour ce téléchargement.'),
+        ),
+      );
+    }
   }
 
   Future<void> _cancelActiveDownload(String url) async {
@@ -486,6 +548,7 @@ class _DownloadsScreenState extends State<DownloadsScreen>
                     progress: active.progress,
                     title: active.title,
                     onCancel: () => _cancelActiveDownload(active.url),
+                    onTogglePause: () => _togglePauseResume(active),
                   ),
                 ),
               );
@@ -550,6 +613,7 @@ class _ActiveDownloadInfo {
   final bd.TaskStatus status;
   final String? taskId;
   final VideoInfo? videoInfo;
+  final bd.DownloadTask task;
 
   const _ActiveDownloadInfo({
     required this.url,
@@ -558,6 +622,7 @@ class _ActiveDownloadInfo {
     required this.status,
     required this.taskId,
     required this.videoInfo,
+    required this.task,
   });
 
   _ActiveDownloadInfo copyWith({
@@ -567,6 +632,7 @@ class _ActiveDownloadInfo {
     bd.TaskStatus? status,
     String? taskId,
     VideoInfo? videoInfo,
+    bd.DownloadTask? task,
   }) {
     return _ActiveDownloadInfo(
       url: url ?? this.url,
@@ -575,6 +641,7 @@ class _ActiveDownloadInfo {
       status: status ?? this.status,
       taskId: taskId ?? this.taskId,
       videoInfo: videoInfo ?? this.videoInfo,
+      task: task ?? this.task,
     );
   }
 }

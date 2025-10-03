@@ -8,6 +8,7 @@ class ActiveDownloadCard extends StatelessWidget {
   final double progress;
   final String title;
   final VoidCallback onCancel;
+  final VoidCallback? onTogglePause;
 
   const ActiveDownloadCard({
     super.key,
@@ -16,6 +17,7 @@ class ActiveDownloadCard extends StatelessWidget {
     required this.progress,
     required this.title,
     required this.onCancel,
+    this.onTogglePause,
   });
 
   String _getStatusText(bd.TaskStatus status) {
@@ -63,6 +65,10 @@ class ActiveDownloadCard extends StatelessWidget {
     final statusText = _getStatusText(status);
     final statusColor = _getStatusColor(status);
     final percentage = (progress * 100).toInt();
+    final canTogglePause =
+        status == bd.TaskStatus.running || status == bd.TaskStatus.paused;
+    final showToggle = canTogglePause && onTogglePause != null;
+    final isPaused = status == bd.TaskStatus.paused;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -153,6 +159,29 @@ class ActiveDownloadCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(width: 16),
+                if (showToggle) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryPurple.withAlpha(31),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primaryPurple.withAlpha(77),
+                      ),
+                    ),
+                    child: IconButton(
+                      onPressed: onTogglePause,
+                      icon: Icon(
+                        isPaused
+                            ? Icons.play_arrow_rounded
+                            : Icons.pause_rounded,
+                        color: AppColors.primaryPurple,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Container(
                   decoration: BoxDecoration(
                     color: AppColors.error.withAlpha(25),
