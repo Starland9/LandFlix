@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/services/download_stream_service.dart';
 import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart';
 import 'package:french_stream_downloader/src/screens/home/home_screen.dart';
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart';
@@ -19,6 +23,10 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
   int _currentIndex = 0;
   late PageController _pageController;
   late AnimationController _animationController;
+  late final StreamSubscription<bd.TaskUpdate> _downloadSubscription;
+
+  final Set<String> _activeTaskIds = <String>{};
+  int _activeDownloadCount = 0;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -52,13 +60,61 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+
+    _downloadSubscription = DownloadStreamService.instance.updates.listen(
+      _handleDownloadUpdate,
+    );
+    _syncActiveDownloadCount();
   }
 
   @override
   void dispose() {
+    _downloadSubscription.cancel();
     _pageController.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _syncActiveDownloadCount() async {
+    try {
+      final tasks = await bd.FileDownloader().allTasks();
+      _activeTaskIds
+        ..clear()
+        ..addAll(tasks.map((task) => task.taskId));
+      _updateActiveBadge();
+    } catch (_) {
+      // Ignorer les erreurs ponctuelles de récupération des tâches.
+    }
+  }
+
+  void _handleDownloadUpdate(bd.TaskUpdate update) {
+    final taskId = update.task.taskId;
+
+    if (update is bd.TaskStatusUpdate) {
+      switch (update.status) {
+        case bd.TaskStatus.complete:
+        case bd.TaskStatus.failed:
+        case bd.TaskStatus.canceled:
+        case bd.TaskStatus.notFound:
+          _activeTaskIds.remove(taskId);
+          break;
+        default:
+          _activeTaskIds.add(taskId);
+      }
+    } else {
+      _activeTaskIds.add(taskId);
+    }
+
+    _updateActiveBadge();
+  }
+
+  void _updateActiveBadge() {
+    final newCount = _activeTaskIds.length;
+    if (newCount == _activeDownloadCount || !mounted) return;
+
+    setState(() {
+      _activeDownloadCount = newCount;
+    });
   }
 
   void _onNavItemTapped(int index) {
@@ -166,12 +222,25 @@ class _MainWrapperScreenState extends State<MainWrapperScreen>
                           AnimatedScale(
                             scale: isActive ? 1.1 : 1.0,
                             duration: const Duration(milliseconds: 300),
-                            child: Icon(
-                              isActive ? item.activeIcon : item.icon,
-                              color: isActive
-                                  ? Colors.white
-                                  : AppColors.textTertiary,
-                              size: 24,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Icon(
+                                  isActive ? item.activeIcon : item.icon,
+                                  color: isActive
+                                      ? Colors.white
+                                      : AppColors.textTertiary,
+                                  size: 24,
+                                ),
+                                if (index == 2 && _activeDownloadCount > 0)
+                                  Positioned(
+                                    right: -10,
+                                    top: -6,
+                                    child: _DownloadsBadge(
+                                      count: _activeDownloadCount,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -213,4 +282,38 @@ class BottomNavItem {
     required this.activeIcon,
     required this.label,
   });
+}
+
+class _DownloadsBadge extends StatelessWidget {
+  final int count;
+
+  const _DownloadsBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final display = count > 99 ? '99+' : count.toString();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.redAccent.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        display,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 }
