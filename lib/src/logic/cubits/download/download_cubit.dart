@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:french_stream_downloader/src/logic/models/download_details.dart';
 
 import '../../services/download_stream_service.dart';
 import '../../services/uqload_download_service.dart';
@@ -86,8 +87,9 @@ class DownloadCubit extends Cubit<DownloadState> {
   }
 
   /// Annule le téléchargement en cours
-  void cancelDownload() {
+  Future<void> cancelDownload() async {
     if (!isClosed) {
+      await UQLoadDownloadService.stopBackgroundDownload(videoUrl);
       emit(DownloadCancelled());
     }
   }
