@@ -319,7 +319,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: dev-latest
-          name: Dev latest build
+          name: LandFlix Latest
           body: "Automated build from branch dev (commit ${{ github.sha }})."
           prerelease: true
           allowUpdates: true

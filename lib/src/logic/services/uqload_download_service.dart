@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
+import 'package:french_stream_downloader/src/logic/models/download_details.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
@@ -38,6 +39,17 @@ class UQLoadDownloadService {
     );
 
     await bd.FileDownloader().enqueue(task);
+  }
+
+  // Stop a background download by its HTML URL
+  static Future<void> stopBackgroundDownload(String htmlUrl) async {
+    final tasks = await bd.FileDownloader().allTasks();
+    for (var task in tasks) {
+      if (task.metaData == htmlUrl) {
+        await bd.FileDownloader().cancel(task);
+        break;
+      }
+    }
   }
 
   /// Récupère les informations d'une vidéo UQLoad sans la télécharger
@@ -119,27 +131,4 @@ class UQLoadDownloadService {
       htmlUrl: url,
     );
   }
-}
-
-/// Classe pour les détails de téléchargement
-class DownloadDetails {
-  final VideoInfo videoInfo;
-  final String downloadPath;
-  final String fileName;
-  final String downloadDir;
-  final String htmlUrl;
-
-  DownloadDetails({
-    required this.videoInfo,
-    required this.downloadPath,
-    required this.fileName,
-    required this.downloadDir,
-    required this.htmlUrl,
-  });
-
-  String get formattedSize =>
-      UQLoadDownloadService.formatFileSize(videoInfo.size);
-
-  bool get hasValidInfo =>
-      videoInfo.title.isNotEmpty && videoInfo.url.isNotEmpty;
 }
