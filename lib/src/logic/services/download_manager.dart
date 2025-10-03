@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart' as bd;
+import 'package:flutter/foundation.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
@@ -17,6 +18,7 @@ class DownloadManager {
 
   DownloadManager._();
 
+  final ValueNotifier<List<DownloadItem>> downloadsNotifier = ValueNotifier([]);
   List<DownloadItem> _downloads = [];
   Set<String> _downloadedIds = {};
 
@@ -48,6 +50,7 @@ class DownloadManager {
 
     await _saveDownloads();
     await _saveDownloadedIds();
+    downloadsNotifier.value = List.unmodifiable(_downloads);
   }
 
   /// Enregistre un téléchargement terminé depuis les infos UQLoad
@@ -124,6 +127,7 @@ class DownloadManager {
 
       await _saveDownloads();
       await _saveDownloadedIds();
+      downloadsNotifier.value = List.unmodifiable(_downloads);
     }
   }
 
@@ -131,6 +135,7 @@ class DownloadManager {
   Future<void> cleanupDeletedDownloads() async {
     _downloads.removeWhere((item) => item.status == DownloadStatus.deleted);
     await _saveDownloads();
+    downloadsNotifier.value = List.unmodifiable(_downloads);
   }
 
   /// Vérifie et met à jour le statut des fichiers
@@ -161,6 +166,7 @@ class DownloadManager {
     if (hasChanges) {
       await _saveDownloads();
       await _saveDownloadedIds();
+      downloadsNotifier.value = List.unmodifiable(_downloads);
     }
   }
 
@@ -175,6 +181,7 @@ class DownloadManager {
         _downloads = downloadsList
             .map((json) => DownloadItem.fromJson(json))
             .toList();
+        downloadsNotifier.value = List.unmodifiable(_downloads);
       }
     } catch (e) {
       dev.log("Erreur lors du chargement des téléchargements: $e");

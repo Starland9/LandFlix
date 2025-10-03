@@ -1,22 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:developer' as dev;
 
-import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
 import 'package:french_stream_downloader/src/logic/services/download_stream_service.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/active_download_card.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/download_card.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/downloads_header.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/empty_state.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/loading_state.dart';
 import 'package:french_stream_downloader/src/screens/downloads/components/section_header.dart';
-import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
 @RoutePage()
 class DownloadsScreen extends StatefulWidget {
@@ -27,420 +25,556 @@ class DownloadsScreen extends StatefulWidget {
 }
 
 class _DownloadsScreenState extends State<DownloadsScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+    with SingleTickerProviderStateMixin {
+  late final DownloadManager _downloadManager;
+  late final StreamSubscription<bd.TaskUpdate> _downloadSubscription;
+  late final AnimationController _emptyAnimationController;
+  late final Animation<double> _emptyFadeAnimation;
 
-  List<DownloadItem> _downloads = [];
-  final Map<String, bd.TaskStatus> _activeDownloads = {};
-  final Map<String, double> _downloadProgress = {};
-  final Map<String, DownloadItem> _activeDownloadItems = {};
+  final Map<String, _ActiveDownloadInfo> _activeDownloads = {};
+  final Map<String, VideoInfo> _videoInfoCache = {};
+  final Map<String, Future<VideoInfo?>> _videoInfoRequests = {};
+
   bool _isLoading = true;
-
-  late StreamSubscription<bd.TaskUpdate> _downloadSubscription;
+  bool _isEmpty = false;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-    _initializeDownloads();
-  }
+    _downloadManager = DownloadManager.instance;
 
-  Future<void> _initializeDownloads() async {
-    await _loadDownloads();
-    await _loadActiveDownloads();
-    _setupDownloadListener();
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      _fadeController.forward();
-    }
+    _emptyAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _emptyFadeAnimation = CurvedAnimation(
+      parent: _emptyAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    _downloadManager.downloadsNotifier.addListener(_updateEmptyState);
+    _downloadSubscription = DownloadStreamService.instance.updates.listen(
+      _handleTaskUpdate,
+    );
+
+    _loadInitialData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateEmptyState());
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _downloadManager.downloadsNotifier.removeListener(_updateEmptyState);
     _downloadSubscription.cancel();
+    _emptyAnimationController.dispose();
     super.dispose();
   }
 
-  void _setupDownloadListener() {
-    _downloadSubscription = DownloadStreamService.instance.updates.listen((
-      update,
-    ) {
-      if (!mounted) return;
-
-      if (update.task.metaData.isEmpty) return;
-
-      try {
-        final item = DownloadItem.fromJson(jsonDecode(update.task.metaData));
-        final url = item.originalUrl;
-
-        setState(() {
-          if (update is bd.TaskStatusUpdate) {
-            final status = update.status;
-            if (status == bd.TaskStatus.complete ||
-                status == bd.TaskStatus.failed ||
-                status == bd.TaskStatus.canceled ||
-                status == bd.TaskStatus.notFound) {
-              _activeDownloads.remove(url);
-              _downloadProgress.remove(url);
-              _activeDownloadItems.remove(url);
-              if (status == bd.TaskStatus.complete) {
-                _loadDownloads(); // Recharger pour afficher le nouveau téléchargement terminé
-              }
-            } else {
-              _activeDownloads[url] = status;
-              _activeDownloadItems[url] = item;
-            }
-          } else if (update is bd.TaskProgressUpdate) {
-            _downloadProgress[url] = update.progress;
-            _activeDownloadItems[url] = item;
-          }
-        });
-      } catch (e) {
-        debugPrint("Error processing download update: $e");
-      }
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
     });
+
+    await _downloadManager.refreshFileStatus();
+    await _syncActiveDownloads();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    _updateEmptyState();
   }
 
-  Future<void> _loadDownloads() async {
-    await DownloadManager.instance.refreshFileStatus();
-    if (mounted) {
-      setState(() {
-        _downloads = DownloadManager.instance.downloads;
-      });
-    }
-  }
-
-  Future<void> _loadActiveDownloads() async {
+  Future<void> _syncActiveDownloads() async {
     try {
-      final records = await bd.FileDownloader().database.allRecords();
+      final tasks = await bd.FileDownloader().allTasks();
       if (!mounted) return;
 
-      final activeTasks = <String, bd.TaskStatus>{};
-      final activeProgress = <String, double>{};
-      final activeItems = <String, DownloadItem>{};
+      final Map<String, _ActiveDownloadInfo> updated = {};
 
-      for (final record in records) {
-        final task = record.task;
-        if (task.metaData.isNotEmpty) {
-          if (record.status != bd.TaskStatus.complete &&
-              record.status != bd.TaskStatus.failed &&
-              record.status != bd.TaskStatus.canceled &&
-              record.status != bd.TaskStatus.notFound) {
-            try {
-              final item = DownloadItem.fromJson(jsonDecode(task.metaData));
-              final url = item.originalUrl;
-              activeTasks[url] = record.status;
-              activeProgress[url] = record.progress;
-              activeItems[url] = item;
-            } catch (e) {
-              debugPrint("Error parsing DownloadItem from record metadata: $e");
-            }
-          }
+      for (final task in tasks) {
+        final metaData = task.metaData.trim();
+        final url = metaData.isNotEmpty ? metaData : task.url;
+        if (url.isEmpty) continue;
+
+        final existing = _activeDownloads[url];
+        final info = _ActiveDownloadInfo(
+          url: url,
+          title: existing?.title ?? _titleFromTask(task),
+          progress: existing?.progress ?? 0,
+          status: existing?.status ?? bd.TaskStatus.enqueued,
+          taskId: task.taskId,
+          videoInfo: existing?.videoInfo,
+        );
+
+        updated[url] = info;
+        if (existing?.videoInfo == null) {
+          _ensureVideoInfo(url);
         }
       }
 
-      if (mounted) {
-        setState(() {
-          _activeDownloads.clear();
-          _activeDownloads.addAll(activeTasks);
-          _downloadProgress.clear();
-          _downloadProgress.addAll(activeProgress);
-          _activeDownloadItems.clear();
-          _activeDownloadItems.addAll(activeItems);
-        });
+      setState(() {
+        _activeDownloads
+          ..clear()
+          ..addAll(updated);
+      });
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de la synchronisation des tâches actives',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+  }
+
+  void _handleTaskUpdate(bd.TaskUpdate update) {
+    final metaData = update.task.metaData.trim();
+    final url = metaData.isNotEmpty ? metaData : update.task.url;
+
+    if (url.isEmpty) return;
+
+    if (update is bd.TaskProgressUpdate) {
+      _upsertActiveDownload(
+        url: url,
+        task: update.task,
+        status: bd.TaskStatus.running,
+        progress: update.progress,
+      );
+    } else if (update is bd.TaskStatusUpdate) {
+      _upsertActiveDownload(url: url, task: update.task, status: update.status);
+
+      switch (update.status) {
+        case bd.TaskStatus.complete:
+          _onTaskCompleted(update.task, url);
+          break;
+        case bd.TaskStatus.failed:
+        case bd.TaskStatus.canceled:
+        case bd.TaskStatus.notFound:
+          _removeActiveDownload(url);
+          break;
+        default:
+          break;
       }
-    } catch (e) {
-      debugPrint('Error loading active downloads: $e');
     }
   }
 
-  String _getDownloadTitle(String url) {
-    final item = _activeDownloadItems[url];
-    if (item != null && item.title.isNotEmpty) {
-      return item.title;
-    }
-    return "Téléchargement...";
-  }
-
-  Future<void> _deleteDownload(DownloadItem download) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: const Text(
-          "Supprimer le téléchargement",
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          "Voulez-vous supprimer '${download.title}' ?\nLe fichier sera supprimé définitivement.",
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text("Supprimer"),
-          ),
-        ],
-      ),
+  void _upsertActiveDownload({
+    required String url,
+    required bd.Task task,
+    bd.TaskStatus? status,
+    double? progress,
+  }) {
+    final existing = _activeDownloads[url];
+    final normalizedProgress = (progress ?? existing?.progress ?? 0).clamp(
+      0.0,
+      1.0,
     );
 
-    if (confirm == true) {
-      await DownloadManager.instance.removeDownload(download.id);
-      await _loadDownloads();
+    setState(() {
+      _activeDownloads[url] =
+          (existing ??
+                  _ActiveDownloadInfo(
+                    url: url,
+                    title: _titleFromTask(task),
+                    progress: 0,
+                    status: bd.TaskStatus.enqueued,
+                    taskId: task.taskId,
+                    videoInfo: null,
+                  ))
+              .copyWith(
+                progress: normalizedProgress,
+                status: status ?? existing?.status,
+                taskId: task.taskId,
+              );
+    });
 
-      if (mounted) {
-        ModernToast.show(
-          context: context,
-          message: "Téléchargement supprimé",
-          type: ToastType.info,
-          title: "🗑️ Supprimé",
-        );
-      }
+    if (existing?.videoInfo == null) {
+      _ensureVideoInfo(url);
     }
+
+    _updateEmptyState();
   }
 
-  Future<void> _openFile(DownloadItem download) async {
-    final file = File(download.filePath);
+  void _removeActiveDownload(String url) {
+    if (!_activeDownloads.containsKey(url)) {
+      _updateEmptyState();
+      return;
+    }
 
-    if (!file.existsSync()) {
-      ModernToast.show(
-        context: context,
-        message: "Le fichier n'existe plus",
-        type: ToastType.error,
-        title: "❌ Erreur",
+    if (!mounted) return;
+    setState(() {
+      _activeDownloads.remove(url);
+    });
+
+    _updateEmptyState();
+  }
+
+  Future<void> _onTaskCompleted(bd.Task task, String url) async {
+    final entry = _activeDownloads[url];
+
+    VideoInfo? videoInfo = entry?.videoInfo;
+    videoInfo ??= await _ensureVideoInfo(url);
+
+    final filePath = _resolveFilePath(task);
+
+    if (videoInfo == null || filePath == null) {
+      dev.log(
+        'Impossible d’enregistrer le téléchargement : info manquante',
+        error: {'url': url, 'filePath': filePath},
       );
-      await _loadDownloads();
+      _removeActiveDownload(url);
       return;
     }
 
     try {
-      final uri = Uri.file(download.filePath);
-      if (!await launchUrl(uri)) {
-        throw 'Could not launch $uri';
-      }
-    } catch (e) {
-      if (mounted) {
-        ModernToast.show(
-          context: context,
-          message:
-              "Impossible d'ouvrir le fichier. Aucune application n'est disponible.",
-          type: ToastType.error,
-          title: "❌ Erreur",
-        );
-      }
+      await _downloadManager.recordDownload(
+        videoInfo: videoInfo,
+        filePath: filePath,
+        originalUrl: url,
+      );
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de l’enregistrement du téléchargement',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+
+    _removeActiveDownload(url);
+  }
+
+  Future<VideoInfo?> _ensureVideoInfo(String url) {
+    if (_videoInfoCache.containsKey(url)) {
+      return Future.value(_videoInfoCache[url]);
+    }
+
+    if (_videoInfoRequests.containsKey(url)) {
+      return _videoInfoRequests[url]!;
+    }
+
+    final future = _fetchVideoInfo(url);
+    _videoInfoRequests[url] = future;
+
+    future
+        .then((info) {
+          _videoInfoRequests.remove(url);
+          if (info == null) return;
+          _videoInfoCache[url] = info;
+          if (!mounted) return;
+
+          final entry = _activeDownloads[url];
+          if (entry != null) {
+            setState(() {
+              _activeDownloads[url] = entry.copyWith(
+                title: info.title,
+                videoInfo: info,
+              );
+            });
+          }
+        })
+        .catchError((error, stack) {
+          dev.log(
+            'Impossible de récupérer les informations de la vidéo',
+            error: error,
+            stackTrace: stack,
+          );
+        });
+
+    return future;
+  }
+
+  Future<VideoInfo?> _fetchVideoInfo(String url) async {
+    try {
+      return await UQLoadDownloadService.getVideoInfo(url);
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de la récupération des infos vidéo',
+        error: e,
+        stackTrace: stack,
+      );
+      return null;
     }
   }
 
-  Future<void> _cancelActiveDownload(String url) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: const Text(
-          "Annuler le téléchargement",
-          style: TextStyle(color: AppColors.textPrimary),
+  String _titleFromTask(bd.Task task) {
+    String filename = task.filename;
+    if (filename.isEmpty) {
+      filename = 'Téléchargement';
+    }
+
+    final withoutExtension = filename.replaceAll(RegExp(r'\.[^.]+$'), '');
+    final formatted = withoutExtension.replaceAll('_', ' ').trim();
+    return formatted.isEmpty ? 'Téléchargement' : formatted;
+  }
+
+  String? _resolveFilePath(bd.Task task) {
+    final directory = task.directory;
+    final filename = task.filename;
+
+    if (directory.isEmpty || filename.isEmpty) {
+      return null;
+    }
+
+    final normalizedDirectory = directory.endsWith('/')
+        ? directory.substring(0, directory.length - 1)
+        : directory;
+
+    return '$normalizedDirectory/$filename';
+  }
+
+  Future<void> _handleRefresh() async {
+    await Future.wait([
+      _downloadManager.refreshFileStatus(),
+      _syncActiveDownloads(),
+    ]);
+  }
+
+  Future<void> _cleanupDeletedDownloads() async {
+    await _downloadManager.cleanupDeletedDownloads();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Téléchargements supprimés nettoyés.')),
+    );
+    _updateEmptyState();
+  }
+
+  Future<void> _openDownload(DownloadItem download) async {
+    if (!download.fileExists) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fichier introuvable sur le stockage.')),
+      );
+      return;
+    }
+
+    try {
+      await bd.FileDownloader().openFile(filePath: download.filePath);
+    } catch (e, stack) {
+      dev.log("Impossible d'ouvrir le fichier", error: e, stackTrace: stack);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Impossible d'ouvrir ce fichier.")),
+      );
+    }
+  }
+
+  Future<void> _deleteDownload(DownloadItem download) async {
+    await _downloadManager.removeDownload(download.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          download.status == DownloadStatus.deleted
+              ? 'Entrée supprimée.'
+              : 'Téléchargement supprimé.',
         ),
-        content: const Text(
-          "Voulez-vous vraiment annuler ce téléchargement ?",
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Non"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text("Annuler"),
-          ),
-        ],
       ),
     );
+    _updateEmptyState();
+  }
 
-    if (confirm == true) {
-      final item = _activeDownloadItems[url];
-      if (item != null) {
-        final tasks = await bd.FileDownloader().database.allRecords();
-        for (final record in tasks) {
-          if (record.task.metaData.contains(item.id)) {
-            await bd.FileDownloader().cancelTaskWithId(record.taskId);
-            if (mounted) {
-              ModernToast.show(
-                context: context,
-                message: "Téléchargement annulé",
-                type: ToastType.info,
-                title: "🚫 Annulé",
-              );
-            }
-            break;
-          }
-        }
+  Future<void> _cancelActiveDownload(String url) async {
+    await UQLoadDownloadService.stopBackgroundDownload(url);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Téléchargement annulé.')));
+    _removeActiveDownload(url);
+  }
+
+  void _updateEmptyState() {
+    final downloads = _downloadManager.downloadsNotifier.value;
+    final shouldBeEmpty =
+        !_isLoading && downloads.isEmpty && _activeDownloads.isEmpty;
+
+    if (shouldBeEmpty == _isEmpty) {
+      if (shouldBeEmpty) {
+        _emptyAnimationController.forward();
+      } else {
+        _emptyAnimationController.reverse();
       }
+      return;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _isEmpty = shouldBeEmpty;
+    });
+
+    if (_isEmpty) {
+      _emptyAnimationController.forward();
+    } else {
+      _emptyAnimationController.reverse();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.darkBackground,
-              Color(0xFF1A0A2E),
-              AppColors.darkBackground,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              DownloadsHeader(
-                isLoading: _isLoading,
-                activeDownloadsCount: _activeDownloads.length,
-                completedDownloadsCount: _downloads.length,
-                totalSize: _formatTotalSize(),
-                onCleanUp: _showCleanupDialog,
-                canCleanUp: _downloads.isNotEmpty,
-              ),
-              Expanded(
-                child: _isLoading
-                    ? const LoadingState()
-                    : (_downloads.isEmpty && _activeDownloads.isEmpty)
-                    ? EmptyState(fadeAnimation: _fadeAnimation)
-                    : _buildDownloadsList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+      body: ValueListenableBuilder<List<DownloadItem>>(
+        valueListenable: _downloadManager.downloadsNotifier,
+        builder: (context, downloads, child) {
+          final activeDownloads = _activeDownloads.values.toList();
+          final completedDownloads = downloads
+              .where((item) => item.status == DownloadStatus.completed)
+              .toList();
+          final deletedDownloads = downloads
+              .where((item) => item.status == DownloadStatus.deleted)
+              .toList();
 
-  Widget _buildDownloadsList() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 32),
-        children: [
-          if (_activeDownloads.isNotEmpty) ...[
-            SectionHeader(title: "En cours", count: _activeDownloads.length),
-            ..._activeDownloads.entries.map((entry) {
-              return ActiveDownloadCard(
-                url: entry.key,
-                status: entry.value,
-                progress: _downloadProgress[entry.key] ?? 0.0,
-                title: _getDownloadTitle(entry.key),
-                onCancel: () => _cancelActiveDownload(entry.key),
-              );
-            }),
-            const SizedBox(height: 16),
-          ],
-          if (_downloads.isNotEmpty) ...[
-            SectionHeader(title: "Terminés", count: _downloads.length),
-            ..._downloads.asMap().entries.map((entry) {
-              final index = entry.key;
-              final download = entry.value;
-              return SlideTransition(
-                position:
-                    Tween<Offset>(
-                      begin: Offset(0, 0.3 + (index * 0.1)),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: _fadeController,
-                        curve: Interval(
-                          (index * 0.1).clamp(0.0, 0.8),
-                          1.0,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      ),
-                    ),
-                child: DownloadCard(
-                  download: download,
-                  onOpen: () => _openFile(download),
-                  onDelete: () => _deleteDownload(download),
+          final totalBytes = completedDownloads.fold<int>(
+            0,
+            (previousValue, element) => previousValue + element.fileSize,
+          );
+          final totalSize = totalBytes > 0
+              ? UQLoadDownloadService.formatFileSize(totalBytes)
+              : '0 B';
+
+          if (_isLoading) {
+            return const LoadingState();
+          }
+
+          if (_isEmpty) {
+            return RefreshIndicator(
+              onRefresh: _handleRefresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  DownloadsHeader(
+                    isLoading: false,
+                    activeDownloadsCount: activeDownloads.length,
+                    completedDownloadsCount: completedDownloads.length,
+                    totalSize: totalSize,
+                    onCleanUp: _cleanupDeletedDownloads,
+                    canCleanUp: deletedDownloads.isNotEmpty,
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: EmptyState(fadeAnimation: _emptyFadeAnimation),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final List<Widget> children = [
+            DownloadsHeader(
+              isLoading: false,
+              activeDownloadsCount: activeDownloads.length,
+              completedDownloadsCount: completedDownloads.length,
+              totalSize: totalSize,
+              onCleanUp: _cleanupDeletedDownloads,
+              canCleanUp: deletedDownloads.isNotEmpty,
+            ),
+          ];
+
+          if (activeDownloads.isNotEmpty) {
+            children
+              ..add(
+                SectionHeader(
+                  title: 'Téléchargements en cours',
+                  count: activeDownloads.length,
+                ),
+              )
+              ..addAll(
+                activeDownloads.map(
+                  (active) => ActiveDownloadCard(
+                    url: active.url,
+                    status: active.status,
+                    progress: active.progress,
+                    title: active.title,
+                    onCancel: () => _cancelActiveDownload(active.url),
+                  ),
                 ),
               );
-            }),
-          ],
-        ],
+          }
+
+          if (completedDownloads.isNotEmpty) {
+            children
+              ..add(
+                SectionHeader(
+                  title: 'Téléchargements terminés',
+                  count: completedDownloads.length,
+                ),
+              )
+              ..addAll(
+                completedDownloads.map(
+                  (download) => DownloadCard(
+                    download: download,
+                    onOpen: () => _openDownload(download),
+                    onDelete: () => _deleteDownload(download),
+                  ),
+                ),
+              );
+          }
+
+          if (deletedDownloads.isNotEmpty) {
+            children
+              ..add(
+                SectionHeader(
+                  title: 'Téléchargements supprimés',
+                  count: deletedDownloads.length,
+                ),
+              )
+              ..addAll(
+                deletedDownloads.map(
+                  (download) => DownloadCard(
+                    download: download,
+                    onOpen: () => _openDownload(download),
+                    onDelete: () => _deleteDownload(download),
+                  ),
+                ),
+              );
+          }
+
+          return RefreshIndicator(
+            onRefresh: _handleRefresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: children,
+            ),
+          );
+        },
       ),
     );
   }
+}
 
-  String _formatTotalSize() {
-    final totalBytes = DownloadManager.instance.totalSize;
-    if (totalBytes <= 0) return '0 B';
-    if (totalBytes >= 1024 * 1024 * 1024) {
-      return "${(totalBytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB";
-    } else if (totalBytes >= 1024 * 1024) {
-      return "${(totalBytes / (1024 * 1024)).toStringAsFixed(1)} MB";
-    } else if (totalBytes >= 1024) {
-      return "${(totalBytes / 1024).toStringAsFixed(1)} KB";
-    }
-    return "$totalBytes B";
-  }
+class _ActiveDownloadInfo {
+  final String url;
+  final String title;
+  final double progress;
+  final bd.TaskStatus status;
+  final String? taskId;
+  final VideoInfo? videoInfo;
 
-  void _showCleanupDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: const Text(
-          "Nettoyer les téléchargements",
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: const Text(
-          "Supprimer définitivement tous les téléchargements marqués comme supprimés ?",
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await DownloadManager.instance.cleanupDeletedDownloads();
-              await _loadDownloads();
+  const _ActiveDownloadInfo({
+    required this.url,
+    required this.title,
+    required this.progress,
+    required this.status,
+    required this.taskId,
+    required this.videoInfo,
+  });
 
-              if (context.mounted) {
-                ModernToast.show(
-                  context: context,
-                  message: "Nettoyage terminé",
-                  type: ToastType.success,
-                  title: "✨ Terminé",
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryPurple,
-            ),
-            child: const Text("Nettoyer"),
-          ),
-        ],
-      ),
+  _ActiveDownloadInfo copyWith({
+    String? url,
+    String? title,
+    double? progress,
+    bd.TaskStatus? status,
+    String? taskId,
+    VideoInfo? videoInfo,
+  }) {
+    return _ActiveDownloadInfo(
+      url: url ?? this.url,
+      title: title ?? this.title,
+      progress: progress ?? this.progress,
+      status: status ?? this.status,
+      taskId: taskId ?? this.taskId,
+      videoInfo: videoInfo ?? this.videoInfo,
     );
   }
 }
