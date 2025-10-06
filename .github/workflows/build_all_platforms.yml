@@ -39,18 +39,18 @@ jobs:
         run: flutter pub get
 
       - name: Build Android APK
-        run: flutter build apk --split-per-abi --dart-define=API_URL=${API_URL}
+        run: flutter build apk --dart-define=API_URL=${API_URL}
 
-      - name: Package Android artifacts
+      - name: Collect Android APK
         run: |
           mkdir -p build/artifacts
-          zip -j build/artifacts/android-apks.zip build/app/outputs/flutter-apk/*.apk
+          cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
 
-      - name: Upload Android artifacts
+      - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-apks
-          path: build/artifacts/android-apks.zip
+          name: android-apk
+          path: build/artifacts/app-release.apk
           if-no-files-found: error
 
   build-ios:
