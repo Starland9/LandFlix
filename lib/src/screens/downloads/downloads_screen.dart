@@ -1,12 +1,20 @@
-import 'dart:io';
+import 'dart:async';
+import 'dart:developer' as dev;
 
-import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
+import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/material.dart';
-import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/models/active_download_info.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:french_stream_downloader/src/logic/services/download_manager.dart';
-import 'package:french_stream_downloader/src/shared/components/modern_toast.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:french_stream_downloader/src/logic/services/download_stream_service.dart';
+import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/active_downloads_list.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/download_items_list.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/downloads_header.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/downloads_overview_view.dart';
+import 'package:french_stream_downloader/src/screens/downloads/components/loading_state.dart';
+import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
 
 @RoutePage()
 class DownloadsScreen extends StatefulWidget {
@@ -17,577 +25,616 @@ class DownloadsScreen extends StatefulWidget {
 }
 
 class _DownloadsScreenState extends State<DownloadsScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+    with SingleTickerProviderStateMixin {
+  late final DownloadManager _downloadManager;
+  late final StreamSubscription<bd.TaskUpdate> _downloadSubscription;
+  late final TabController _tabController;
 
-  List<DownloadItem> _downloads = [];
+  final Map<String, ActiveDownloadInfo> _activeDownloads = {};
+  final Map<String, VideoInfo> _videoInfoCache = {};
+  final Map<String, Future<VideoInfo?>> _videoInfoRequests = {};
+
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
+    _downloadManager = DownloadManager.instance;
+    _tabController = TabController(length: 4, vsync: this);
+
+    _downloadSubscription = DownloadStreamService.instance.updates.listen(
+      _handleTaskUpdate,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-    _loadDownloads();
+
+    _loadInitialData();
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _downloadSubscription.cancel();
+    _tabController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadDownloads() async {
-    await DownloadManager.instance.refreshFileStatus();
+  /// Charge l'état initial du gestionnaire et synchronise les tâches actives.
+  Future<void> _loadInitialData() async {
     setState(() {
-      _downloads = DownloadManager.instance.downloads;
+      _isLoading = true;
+    });
+
+    await _downloadManager.refreshFileStatus();
+    await _syncActiveDownloads();
+
+    if (!mounted) return;
+
+    setState(() {
       _isLoading = false;
     });
-    _fadeController.forward();
   }
 
-  Future<void> _deleteDownload(DownloadItem download) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: const Text(
-          "Supprimer le téléchargement",
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          "Voulez-vous supprimer '${download.title}' ?\nLe fichier sera supprimé définitivement.",
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text("Supprimer"),
-          ),
-        ],
-      ),
-    );
+  /// Synchronise les tâches en cours depuis le plugin natif.
+  Future<void> _syncActiveDownloads() async {
+    try {
+      final tasks = await bd.FileDownloader().allTasks();
+      if (!mounted) return;
 
-    if (confirm == true) {
-      await DownloadManager.instance.removeDownload(download.id);
-      await _loadDownloads();
+      final Map<String, ActiveDownloadInfo> updated = {};
 
-      if (mounted) {
-        ModernToast.show(
-          context: context,
-          message: "Téléchargement supprimé",
-          type: ToastType.info,
-          title: "🗑️ Supprimé",
+      for (final task in tasks) {
+        if (task is! bd.DownloadTask) continue;
+        final downloadTask = task;
+        final metaData = downloadTask.metaData.trim();
+        final url = metaData.isNotEmpty ? metaData : downloadTask.url;
+        if (url.isEmpty) continue;
+
+        final existing = _activeDownloads[url];
+        final info = ActiveDownloadInfo(
+          url: url,
+          title: existing?.title ?? _titleFromTask(downloadTask),
+          progress: existing?.progress ?? 0,
+          status: existing?.status ?? bd.TaskStatus.enqueued,
+          taskId: downloadTask.taskId,
+          videoInfo: existing?.videoInfo,
+          task: downloadTask,
         );
+
+        updated[url] = info;
+        if (existing?.videoInfo == null) {
+          _ensureVideoInfo(url);
+        }
+      }
+
+      setState(() {
+        _activeDownloads
+          ..clear()
+          ..addAll(updated);
+      });
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de la synchronisation des tâches actives',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+  }
+
+  /// Gère les mises à jour de tâches remontées par le service d'arrière-plan.
+  void _handleTaskUpdate(bd.TaskUpdate update) {
+    final task = update.task;
+    if (task is! bd.DownloadTask) return;
+    final downloadTask = task;
+
+    final metaData = downloadTask.metaData.trim();
+    final url = metaData.isNotEmpty ? metaData : downloadTask.url;
+
+    if (url.isEmpty) return;
+
+    if (update is bd.TaskProgressUpdate) {
+      _upsertActiveDownload(
+        url: url,
+        task: downloadTask,
+        status: bd.TaskStatus.running,
+        progress: update.progress,
+      );
+    } else if (update is bd.TaskStatusUpdate) {
+      _upsertActiveDownload(
+        url: url,
+        task: downloadTask,
+        status: update.status,
+      );
+
+      switch (update.status) {
+        case bd.TaskStatus.complete:
+          _onTaskCompleted(downloadTask, url);
+          break;
+        case bd.TaskStatus.failed:
+        case bd.TaskStatus.canceled:
+        case bd.TaskStatus.notFound:
+          _removeActiveDownload(url);
+          break;
+        default:
+          break;
       }
     }
   }
 
-  Future<void> _openFile(DownloadItem download) async {
-    final file = File(download.filePath);
+  /// Insère ou met à jour un téléchargement actif suivi par l'interface.
+  void _upsertActiveDownload({
+    required String url,
+    required bd.DownloadTask task,
+    bd.TaskStatus? status,
+    double? progress,
+  }) {
+    final existing = _activeDownloads[url];
+    final normalizedProgress = (progress ?? existing?.progress ?? 0).clamp(
+      0.0,
+      1.0,
+    );
 
-    if (!file.existsSync()) {
-      ModernToast.show(
-        context: context,
-        message: "Le fichier n'existe plus",
-        type: ToastType.error,
-        title: "❌ Erreur",
+    setState(() {
+      final next =
+          (existing ??
+                  ActiveDownloadInfo(
+                    url: url,
+                    title: _titleFromTask(task),
+                    progress: 0,
+                    status: bd.TaskStatus.enqueued,
+                    taskId: task.taskId,
+                    videoInfo: null,
+                    task: task,
+                  ))
+              .copyWith(
+                progress: normalizedProgress,
+                status: status ?? existing?.status ?? bd.TaskStatus.enqueued,
+                taskId: task.taskId,
+                task: task,
+              );
+
+      _activeDownloads[url] = next;
+    });
+
+    if (existing?.videoInfo == null) {
+      _ensureVideoInfo(url);
+    }
+  }
+
+  /// Supprime un téléchargement actif de la carte locale.
+  void _removeActiveDownload(String url) {
+    if (!_activeDownloads.containsKey(url)) {
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _activeDownloads.remove(url);
+    });
+  }
+
+  /// Enregistre un téléchargement complété dans la base puis nettoie l'état actif.
+  Future<void> _onTaskCompleted(bd.DownloadTask task, String url) async {
+    if (_downloadManager.isDownloaded(url)) {
+      _removeActiveDownload(url);
+      return;
+    }
+
+    final entry = _activeDownloads[url];
+
+    VideoInfo? videoInfo = entry?.videoInfo;
+    videoInfo ??= await _ensureVideoInfo(url);
+
+    final filePath = _resolveFilePath(task);
+
+    if (videoInfo == null || filePath == null) {
+      dev.log(
+        'Impossible d’enregistrer le téléchargement : info manquante',
+        error: {'url': url, 'filePath': filePath},
+      );
+      _removeActiveDownload(url);
+      return;
+    }
+
+    try {
+      await _downloadManager.recordDownload(
+        videoInfo: videoInfo,
+        filePath: filePath,
+        originalUrl: url,
+      );
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de l’enregistrement du téléchargement',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+
+    _removeActiveDownload(url);
+  }
+
+  /// Garantit que les métadonnées vidéo sont disponibles en mémoire.
+  Future<VideoInfo?> _ensureVideoInfo(String url) {
+    if (_videoInfoCache.containsKey(url)) {
+      return Future.value(_videoInfoCache[url]);
+    }
+
+    if (_videoInfoRequests.containsKey(url)) {
+      return _videoInfoRequests[url]!;
+    }
+
+    final future = _fetchVideoInfo(url);
+    _videoInfoRequests[url] = future;
+
+    future
+        .then((info) {
+          _videoInfoRequests.remove(url);
+          if (info == null) return;
+          _videoInfoCache[url] = info;
+          if (!mounted) return;
+
+          final entry = _activeDownloads[url];
+          if (entry != null) {
+            setState(() {
+              _activeDownloads[url] = entry.copyWith(
+                title: info.title,
+                videoInfo: info,
+              );
+            });
+          }
+        })
+        .catchError((error, stack) {
+          dev.log(
+            'Impossible de récupérer les informations de la vidéo',
+            error: error,
+            stackTrace: stack,
+          );
+        });
+
+    return future;
+  }
+
+  /// Récupère les métadonnées vidéo auprès du service UQLoad.
+  Future<VideoInfo?> _fetchVideoInfo(String url) async {
+    try {
+      return await UQLoadDownloadService.getVideoInfo(url);
+    } catch (e, stack) {
+      dev.log(
+        'Erreur lors de la récupération des infos vidéo',
+        error: e,
+        stackTrace: stack,
+      );
+      return null;
+    }
+  }
+
+  /// Formate un titre lisible à partir du nom de fichier de la tâche.
+  String _titleFromTask(bd.DownloadTask task) {
+    String filename = task.filename;
+    if (filename.isEmpty) {
+      filename = 'Téléchargement';
+    }
+
+    final withoutExtension = filename.replaceAll(RegExp(r'\.[^.]+$'), '');
+    final formatted = withoutExtension.replaceAll('_', ' ').trim();
+    return formatted.isEmpty ? 'Téléchargement' : formatted;
+  }
+
+  /// Construit le chemin complet du fichier téléchargé.
+  String? _resolveFilePath(bd.DownloadTask task) {
+    final directory = task.directory;
+    final filename = task.filename;
+
+    if (directory.isEmpty || filename.isEmpty) {
+      return null;
+    }
+
+    final normalizedDirectory = directory.endsWith('/')
+        ? directory.substring(0, directory.length - 1)
+        : directory;
+
+    return '$normalizedDirectory/$filename';
+  }
+
+  /// Rafraîchit simultanément la liste locale et les tâches actives.
+  Future<void> _handleRefresh() async {
+    await Future.wait([
+      _downloadManager.refreshFileStatus(),
+      _syncActiveDownloads(),
+    ]);
+  }
+
+  /// Supprime définitivement les enregistrements marqués comme supprimés.
+  Future<void> _cleanupDeletedDownloads() async {
+    await _downloadManager.cleanupDeletedDownloads();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Téléchargements supprimés nettoyés.')),
+    );
+  }
+
+  /// Tente d'ouvrir un fichier téléchargé via le gestionnaire natif.
+  Future<void> _openDownload(DownloadItem download) async {
+    if (!download.fileExists) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fichier introuvable sur le stockage.')),
       );
       return;
     }
 
     try {
-      final uri = Uri.file(download.filePath);
-      await launchUrl(uri);
-    } catch (e) {
-      if (mounted) {
-        ModernToast.show(
-          context: context,
-          message: "Impossible d'ouvrir le fichier",
-          type: ToastType.error,
-          title: "❌ Erreur",
+      await bd.FileDownloader().openFile(filePath: download.filePath);
+    } catch (e, stack) {
+      dev.log("Impossible d'ouvrir le fichier", error: e, stackTrace: stack);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Impossible d'ouvrir ce fichier.")),
+      );
+    }
+  }
+
+  /// Supprime un téléchargement persisté puis affiche une notification.
+  Future<void> _deleteDownload(DownloadItem download) async {
+    await _downloadManager.removeDownload(download.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          download.status == DownloadStatus.deleted
+              ? 'Entrée supprimée.'
+              : 'Téléchargement supprimé.',
+        ),
+      ),
+    );
+  }
+
+  /// Met en pause ou reprend un téléchargement actif si supporté.
+  Future<void> _togglePauseResume(ActiveDownloadInfo info) async {
+    if (info.status != bd.TaskStatus.running &&
+        info.status != bd.TaskStatus.paused) {
+      return;
+    }
+
+    final downloader = bd.FileDownloader();
+
+    try {
+      if (info.status == bd.TaskStatus.paused) {
+        await downloader.resume(info.task);
+        if (!mounted) return;
+        _upsertActiveDownload(
+          url: info.url,
+          task: info.task,
+          status: bd.TaskStatus.running,
+          progress: info.progress,
+        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Téléchargement repris.')));
+      } else {
+        await downloader.pause(info.task);
+        if (!mounted) return;
+        _upsertActiveDownload(
+          url: info.url,
+          task: info.task,
+          status: bd.TaskStatus.paused,
+          progress: info.progress,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Téléchargement mis en pause.')),
         );
       }
+    } catch (e, stack) {
+      dev.log(
+        'Erreur pause/reprise du téléchargement',
+        error: e,
+        stackTrace: stack,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Action indisponible pour ce téléchargement.'),
+        ),
+      );
+    }
+  }
+
+  /// Annule un téléchargement actif côté natif et nettoie l'état local.
+  Future<void> _cancelActiveDownload(String url) async {
+    await UQLoadDownloadService.stopBackgroundDownload(url);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Téléchargement annulé.')));
+    _removeActiveDownload(url);
+  }
+
+  /// Construit un onglet enveloppé dans un `RefreshIndicator`.
+  Widget _buildRefreshableTab(Widget child) {
+    return RefreshIndicator(onRefresh: _handleRefresh, child: child);
+  }
+
+  /// Retourne un poids de tri pour un statut de tâche donné.
+  int _statusPriority(bd.TaskStatus status) {
+    switch (status) {
+      case bd.TaskStatus.running:
+        return 0;
+      case bd.TaskStatus.paused:
+        return 1;
+      case bd.TaskStatus.enqueued:
+        return 2;
+      default:
+        return 3;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.darkBackground,
-              Color(0xFF1A0A2E),
-              AppColors.darkBackground,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header moderne
-              Container(
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.darkSurfaceVariant,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        onPressed: () => {},
-                        icon: const Icon(
-                          Icons.download_rounded,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Mes Téléchargements",
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                          ),
-                          if (!_isLoading) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              "${_downloads.length} téléchargement${_downloads.length > 1 ? 's' : ''} • ${DownloadManager.instance.totalSize > 0 ? _formatTotalSize() : '0 B'}",
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    if (_downloads.isNotEmpty)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.darkSurfaceVariant,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          onPressed: _showCleanupDialog,
-                          icon: const Icon(
-                            Icons.cleaning_services_rounded,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+      body: SafeArea(
+        child: ValueListenableBuilder<List<DownloadItem>>(
+          valueListenable: _downloadManager.downloadsNotifier,
+          builder: (context, downloads, _) {
+            final activeDownloads = _activeDownloads.values.toList()
+              ..sort((a, b) {
+                final priorityComparison = _statusPriority(
+                  a.status,
+                ).compareTo(_statusPriority(b.status));
+                if (priorityComparison != 0) {
+                  return priorityComparison;
+                }
+                return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+              });
 
-              // Contenu
-              Expanded(
-                child: _isLoading
-                    ? _buildLoadingState()
-                    : _downloads.isEmpty
-                    ? _buildEmptyState()
-                    : _buildDownloadsList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            final completedDownloads =
+                downloads
+                    .where((item) => item.status == DownloadStatus.completed)
+                    .toList()
+                  ..sort((a, b) => b.downloadDate.compareTo(a.downloadDate));
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryPurple),
-      ),
-    );
-  }
+            final deletedDownloads =
+                downloads
+                    .where((item) => item.status == DownloadStatus.deleted)
+                    .toList()
+                  ..sort((a, b) => b.downloadDate.compareTo(a.downloadDate));
 
-  Widget _buildEmptyState() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  gradient: AppColors.cardGradient,
-                  borderRadius: BorderRadius.circular(60),
-                  border: Border.all(
-                    color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.download_outlined,
-                  size: 60,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                "Aucun téléchargement",
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Vos téléchargements apparaîtront ici une fois terminés.",
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            final totalBytes = completedDownloads.fold<int>(
+              0,
+              (previousValue, element) => previousValue + element.fileSize,
+            );
+            final totalSize = totalBytes > 0
+                ? UQLoadDownloadService.formatFileSize(totalBytes)
+                : '0 B';
 
-  Widget _buildDownloadsList() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 32),
-        itemCount: _downloads.length,
-        itemBuilder: (context, index) {
-          final download = _downloads[index];
-          return SlideTransition(
-            position:
-                Tween<Offset>(
-                  begin: Offset(0, 0.3 + (index * 0.1)),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _fadeController,
-                    curve: Interval(
-                      (index * 0.1).clamp(0.0, 0.8),
-                      1.0,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
-                ),
-            child: _buildDownloadCard(download),
-          );
-        },
-      ),
-    );
-  }
+            final header = DownloadsHeader(
+              isLoading: _isLoading,
+              activeDownloadsCount: activeDownloads.length,
+              completedDownloadsCount: completedDownloads.length,
+              totalSize: totalSize,
+              onCleanUp: _cleanupDeletedDownloads,
+              canCleanUp: deletedDownloads.isNotEmpty,
+            );
 
-  Widget _buildDownloadCard(DownloadItem download) {
-    final isDeleted = download.status == DownloadStatus.deleted;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: isDeleted
-            ? LinearGradient(
-                colors: [
-                  AppColors.darkSurface.withValues(alpha: 0.5),
-                  AppColors.darkSurfaceVariant.withValues(alpha: 0.3),
+            if (_isLoading) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  header,
+                  const Expanded(child: LoadingState()),
                 ],
-              )
-            : AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDeleted
-              ? AppColors.error.withValues(alpha: 0.3)
-              : AppColors.primaryPurple.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: isDeleted ? null : () => _openFile(download),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Thumbnail ou icône
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: AppColors.darkSurfaceVariant,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: download.thumbnailUrl.isNotEmpty && !isDeleted
-                        ? Image.network(
-                            download.thumbnailUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildFileIcon(download),
-                          )
-                        : _buildFileIcon(download),
+                header,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildTabBar(context),
                   ),
                 ),
-
-                const SizedBox(width: 16),
-
-                // Informations
+                const SizedBox(height: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: TabBarView(
+                    controller: _tabController,
                     children: [
-                      Text(
-                        download.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: isDeleted
-                                  ? AppColors.textTertiary
-                                  : AppColors.textPrimary,
-                            ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-
-                      Row(
-                        children: [
-                          // Badge de taille
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentTeal.withValues(
-                                alpha: 0.2,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.accentTeal.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              download.formattedSize,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.accentTeal,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
-                                  ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 8),
-
-                          // Badge de date
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryPurple.withValues(
-                                alpha: 0.2,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.primaryPurple.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              download.formattedDate,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.primaryPurple,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
-                                  ),
-                            ),
-                          ),
-
-                          if (isDeleted) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: AppColors.error.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Text(
-                                "Supprimé",
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.error,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 11,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-
-                      if (download.resolution != "Unknown" ||
-                          download.duration != "Unknown") ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          "${download.resolution} • ${download.duration}",
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.textTertiary),
+                      _buildRefreshableTab(
+                        DownloadsOverviewView(
+                          activeDownloads: activeDownloads,
+                          completedDownloads: completedDownloads,
+                          deletedDownloads: deletedDownloads,
+                          onCancelActive: (info) =>
+                              unawaited(_cancelActiveDownload(info.url)),
+                          onTogglePause: (info) =>
+                              unawaited(_togglePauseResume(info)),
+                          onOpenDownload: (download) =>
+                              unawaited(_openDownload(download)),
+                          onDeleteDownload: (download) =>
+                              unawaited(_deleteDownload(download)),
                         ),
-                      ],
+                      ),
+                      _buildRefreshableTab(
+                        ActiveDownloadsList(
+                          downloads: activeDownloads,
+                          onCancel: (info) =>
+                              unawaited(_cancelActiveDownload(info.url)),
+                          onTogglePause: (info) =>
+                              unawaited(_togglePauseResume(info)),
+                        ),
+                      ),
+                      _buildRefreshableTab(
+                        DownloadItemsList(
+                          downloads: completedDownloads,
+                          onOpen: (download) =>
+                              unawaited(_openDownload(download)),
+                          onDelete: (download) =>
+                              unawaited(_deleteDownload(download)),
+                          emptyLabel:
+                              'Aucun téléchargement terminé pour le moment.',
+                          emptyIcon: Icons.save_alt_rounded,
+                          emptyDescription:
+                              'Dès qu’un téléchargement est finalisé, il apparaîtra automatiquement ici.',
+                          emptyTip:
+                              'Astuce : Laissez vos téléchargements se terminer pour les retrouver hors ligne.',
+                        ),
+                      ),
+                      _buildRefreshableTab(
+                        DownloadItemsList(
+                          downloads: deletedDownloads,
+                          onOpen: (download) =>
+                              unawaited(_openDownload(download)),
+                          onDelete: (download) =>
+                              unawaited(_deleteDownload(download)),
+                          emptyLabel:
+                              'Aucun téléchargement supprimé à afficher.',
+                          emptyIcon: Icons.delete_sweep_rounded,
+                          emptyDescription:
+                              'Les téléchargements que vous supprimez seront listés ici pour consultation rapide.',
+                          emptyTip:
+                              'Astuce : Utilisez l’icône corbeille pour déplacer un élément dans cette section.',
+                        ),
+                      ),
                     ],
                   ),
                 ),
-
-                const SizedBox(width: 16),
-
-                // Bouton d'action
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: IconButton(
-                    onPressed: () => _deleteDownload(download),
-                    icon: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: AppColors.error,
-                      size: 20,
-                    ),
-                  ),
-                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildFileIcon(DownloadItem download) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: download.status == DownloadStatus.deleted
-            ? LinearGradient(
-                colors: [
-                  AppColors.error.withValues(alpha: 0.3),
-                  AppColors.error.withValues(alpha: 0.1),
-                ],
-              )
-            : AppColors.primaryGradient,
+  TabBar _buildTabBar(BuildContext context) {
+    return TabBar(
+      controller: _tabController,
+      isScrollable: true,
+      tabAlignment: TabAlignment.start,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+      indicator: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(
-        download.status == DownloadStatus.deleted
-            ? Icons.delete_outline_rounded
-            : Icons.play_circle_fill_rounded,
-        color: Colors.white,
-        size: 24,
-      ),
-    );
-  }
-
-  String _formatTotalSize() {
-    final totalBytes = DownloadManager.instance.totalSize;
-    if (totalBytes >= 1024 * 1024 * 1024) {
-      return "${(totalBytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB";
-    } else if (totalBytes >= 1024 * 1024) {
-      return "${(totalBytes / (1024 * 1024)).toStringAsFixed(1)} MB";
-    } else if (totalBytes >= 1024) {
-      return "${(totalBytes / 1024).toStringAsFixed(1)} KB";
-    }
-    return "$totalBytes B";
-  }
-
-  void _showCleanupDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: const Text(
-          "Nettoyer les téléchargements",
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: const Text(
-          "Supprimer définitivement tous les téléchargements marqués comme supprimés ?",
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await DownloadManager.instance.cleanupDeletedDownloads();
-              await _loadDownloads();
-
-              if (context.mounted) {
-                ModernToast.show(
-                  context: context,
-                  message: "Nettoyage terminé",
-                  type: ToastType.success,
-                  title: "✨ Terminé",
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryPurple,
-            ),
-            child: const Text("Nettoyer"),
-          ),
-        ],
-      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      dividerColor: Colors.transparent,
+      labelColor: Theme.of(context).colorScheme.primary,
+      unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      labelStyle: Theme.of(
+        context,
+      ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+      splashBorderRadius: BorderRadius.circular(12),
+      tabs: const [
+        Tab(text: 'Vue d’ensemble'),
+        Tab(text: 'Actifs'),
+        Tab(text: 'Terminés'),
+        Tab(text: 'Supprimés'),
+      ],
     );
   }
 }

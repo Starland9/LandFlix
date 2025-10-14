@@ -5,6 +5,9 @@ import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/cubits/uq/uq_cubit.dart';
 import 'package:french_stream_downloader/src/logic/models/search_result.dart';
 import 'package:french_stream_downloader/src/logic/repos/uq_repo.dart';
+import 'package:french_stream_downloader/src/screens/result/components/empty_state_widget.dart';
+import 'package:french_stream_downloader/src/screens/result/components/error_state_widget.dart';
+import 'package:french_stream_downloader/src/screens/result/components/loading_state_widget.dart';
 import 'package:french_stream_downloader/src/screens/result/components/uqvideo_widget.dart';
 
 @RoutePage()
@@ -201,7 +204,9 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
                     final uqvideos = state.results;
 
                     if (uqvideos.isEmpty) {
-                      return SliverFillRemaining(child: _buildEmptyState());
+                      return const SliverFillRemaining(
+                        child: EmptyStateWidget(),
+                      );
                     }
 
                     return SliverPadding(
@@ -238,173 +243,22 @@ class _UqvideosResultScreenState extends State<UqvideosResultScreen>
 
                   if (state is UqError) {
                     return SliverFillRemaining(
-                      child: _buildErrorState(state.message),
+                      child: ErrorStateWidget(
+                        message: state.message,
+                        onRetry: () {
+                          context.read<UqCubit>().getUqVideos(
+                            htmlUrl: widget.searchResult.url,
+                          );
+                        },
+                      ),
                     );
                   }
 
-                  return SliverFillRemaining(child: _buildLoadingState());
+                  return const SliverFillRemaining(child: LoadingStateWidget());
                 },
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(40),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 3,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            "Chargement des vidéos...",
-            style: Theme.of(
-              context,
-            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Récupération des liens de téléchargement",
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: AppColors.cardGradient,
-                borderRadius: BorderRadius.circular(60),
-                border: Border.all(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
-              child: const Icon(
-                Icons.video_library_outlined,
-                size: 60,
-                color: AppColors.textTertiary,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Aucune vidéo disponible",
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "Nous n'avons trouvé aucune vidéo à télécharger pour ce contenu.",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back_rounded),
-              label: const Text("Retour à la recherche"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: AppColors.cardGradient,
-                borderRadius: BorderRadius.circular(60),
-                border: Border.all(
-                  color: AppColors.error.withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                size: 60,
-                color: AppColors.error,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Erreur de chargement",
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  label: const Text("Retour"),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.read<UqCubit>().getUqVideos(
-                      htmlUrl: widget.searchResult.url,
-                    );
-                  },
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text("Réessayer"),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );

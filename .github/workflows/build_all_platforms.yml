@@ -1,0 +1,327 @@
+name: Build Flutter apps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CI: true
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --dart-define=API_URL=${API_URL}
+
+      - name: Collect Android APK
+        run: |
+          mkdir -p build/artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk build/artifacts/
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/artifacts/app-release.apk
+          if-no-files-found: error
+
+  build-ios:
+    name: Build iOS IPA (no codesign)
+    runs-on: macos-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Prepare iOS artifacts
+        run: |
+          flutter config --enable-ios
+          flutter precache --ios
+
+      # - name: Xcode Archive
+      #   run: xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release archive
+
+      - name: Build iOS IPA (no codesign)
+        run: flutter build ipa --release --dart-define=API_URL=${API_URL}
+
+      - name: Collect iOS artifacts
+        run: |
+          mkdir -p build/artifacts
+          cp build/ios/ipa/*.ipa build/artifacts/
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: build/artifacts/*.ipa
+          if-no-files-found: error
+
+  build-web:
+    name: Build Web bundle
+    runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build web bundle
+        run: flutter build web --dart-define=API_URL=${API_URL}
+
+      - name: Package web bundle
+        run: |
+          mkdir -p build/artifacts
+          cd build/web
+          zip -r ../artifacts/web-build.zip .
+
+      - name: Upload web artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/artifacts/web-build.zip
+          if-no-files-found: error
+
+  build-linux:
+    name: Build Linux desktop bundle
+    runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Linux desktop bundle
+        run: |
+          flutter config --enable-linux-desktop
+          flutter build linux --release --dart-define=API_URL=${API_URL}
+
+      - name: Package Linux bundle
+        run: |
+          mkdir -p build/artifacts
+          zip -r build/artifacts/linux-build.zip build/linux/x64/release/bundle
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: build/artifacts/linux-build.zip
+          if-no-files-found: error
+
+  build-macos:
+    name: Build macOS app
+    runs-on: macos-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build macOS app
+        run: |
+          flutter config --enable-macos-desktop
+          flutter precache --macos
+          flutter build macos --release --dart-define=API_URL=${API_URL}
+
+      - name: Package macOS app
+        run: |
+          mkdir -p build/artifacts
+          cd build/macos/Build/Products
+          zip -r ../../../artifacts/macos-build.zip Release
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: build/artifacts/macos-build.zip
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows app
+    runs-on: windows-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: C:\Users\runneradmin\AppData\Local\Pub\Cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        shell: pwsh
+        run: flutter pub get
+
+      - name: Build Windows app
+        shell: pwsh
+        run: |
+          flutter config --enable-windows-desktop
+          flutter build windows --release --dart-define="API_URL=$Env:API_URL"
+
+      - name: Ensure Windows release build exists
+        shell: pwsh
+        run: |
+          if (!(Test-Path "build/windows/x64/runner/Release")) {
+            Write-Error "Release directory not found. Make sure the build step completed successfully."
+            exit 1
+          }
+
+      - name: Package Windows app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build\artifacts | Out-Null
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath build\artifacts\windows-build.zip -Force
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: build/artifacts/windows-build.zip
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - build-android
+      # - build-ios
+      - build-web
+      - build-linux
+      - build-macos
+      - build-windows
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: List collected artifacts
+        run: |
+          ls -R release-artifacts
+
+      - name: Gather release files
+        run: |
+          mkdir -p release-zips
+          find release-artifacts -type f \( -name '*.zip' -o -name '*.ipa' -o -name '*.apk' \) -exec cp {} release-zips/ \;
+
+      - name: List packaged release files
+        run: |
+          ls -R release-zips
+
+      - name: Create or update dev release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: dev-latest
+          name: LandFlix Latest
+          body: "Automated build from branch dev (commit ${{ github.sha }})."
+          prerelease: true
+          allowUpdates: true
+          artifacts: release-zips/*
+          artifactErrorsFailBuild: true

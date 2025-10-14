@@ -1,7 +1,7 @@
 class Uqvideo {
-  final String duration;
-  final String imageUrl;
-  final String resolution;
+  final String? duration;
+  final String? imageUrl;
+  final String? resolution;
   final String title;
   final String url;
   final String type;
