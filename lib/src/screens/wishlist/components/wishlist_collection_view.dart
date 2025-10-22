@@ -43,7 +43,7 @@ class WishlistCollectionView extends StatelessWidget {
           onOpen: onOpen == null ? null : () => onOpen!(item),
         );
       },
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
     );
   }
 }
@@ -71,29 +71,30 @@ class _WishlistCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onOpen,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           decoration: BoxDecoration(
             gradient: AppColors.cardGradient,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.primaryPurple.withValues(alpha: 0.12),
+              color: AppColors.primaryPurple.withValues(alpha: 0.08),
+              width: 0.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildThumbnail(context),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,15 +110,15 @@ class _WishlistCard extends StatelessWidget {
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.textPrimary,
                                   ),
-                              maxLines: 3,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           _buildRemoveButton(context),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -148,7 +149,7 @@ class _WishlistCard extends StatelessWidget {
                             const DownloadedBadge(size: BadgeSize.small),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
                         child: _buildDownloadButton(context),
@@ -167,7 +168,7 @@ class _WishlistCard extends StatelessWidget {
   Widget _buildThumbnail(BuildContext context) {
     if (item.imageUrl != null && item.imageUrl!.isNotEmpty) {
       return SizedBox(
-        width: 120,
+        width: 90,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: AspectRatio(
@@ -186,13 +187,13 @@ class _WishlistCard extends StatelessWidget {
 
   Widget _thumbnailFallback() {
     return Container(
-      width: 120,
-      height: 56,
+      width: 90,
+      height: 42,
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: const Icon(Icons.movie_outlined, color: Colors.white, size: 28),
+      child: const Icon(Icons.movie_outlined, color: Colors.white, size: 24),
     );
   }
 
@@ -202,21 +203,22 @@ class _WishlistCard extends StatelessWidget {
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.darkSurfaceVariant.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.textSecondary),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12, color: AppColors.textSecondary),
+          const SizedBox(width: 4),
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
+              fontSize: 11,
             ),
           ),
         ],
@@ -249,20 +251,20 @@ class _WishlistCard extends StatelessWidget {
   Widget _buildDownloadButton(BuildContext context) {
     final child = isDownloading
         ? const SizedBox(
-            width: 18,
-            height: 18,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator.adaptive(
-              strokeWidth: 2.2,
+              strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           )
-        : const Icon(Icons.download_rounded, color: Colors.white);
+        : const Icon(Icons.download_rounded, color: Colors.white, size: 18);
 
     return ElevatedButton.icon(
       onPressed: isDownloading ? null : onDownload,
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         backgroundColor: AppColors.primaryPurple,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -270,7 +272,7 @@ class _WishlistCard extends StatelessWidget {
       icon: child,
       label: Text(
         isDownloading ? 'Préparation…' : 'Télécharger',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
