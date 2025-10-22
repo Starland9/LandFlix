@@ -294,7 +294,7 @@ jobs:
       # - build-ios
       - build-web
       - build-linux
-      - build-macos
+      # - build-macos
       - build-windows
     steps:
       - name: Download artifacts
