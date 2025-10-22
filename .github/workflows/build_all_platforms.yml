@@ -3,7 +3,7 @@ name: Build Flutter apps
 on:
   push:
     branches:
-      - main
+      - stable
   workflow_dispatch:
 
 permissions:
