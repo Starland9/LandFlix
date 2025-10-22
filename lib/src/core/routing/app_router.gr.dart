@@ -13,25 +13,41 @@ import 'package:auto_route/auto_route.dart' as _i9;
 import 'package:flutter/foundation.dart' as _i10;
 import 'package:french_stream_downloader/src/logic/models/search_result.dart'
     as _i11;
-import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart'
+import 'package:french_stream_downloader/src/screens/background_downloads/background_downloads_screen.dart'
     as _i1;
-import 'package:french_stream_downloader/src/screens/home/home_screen.dart'
+import 'package:french_stream_downloader/src/screens/downloads/downloads_screen.dart'
     as _i2;
-import 'package:french_stream_downloader/src/screens/main_wrapper/main_wrapper_screen.dart'
+import 'package:french_stream_downloader/src/screens/home/home_screen.dart'
     as _i3;
-import 'package:french_stream_downloader/src/screens/result/search_result_screen.dart'
+import 'package:french_stream_downloader/src/screens/main_wrapper/main_wrapper_screen.dart'
     as _i4;
+import 'package:french_stream_downloader/src/screens/result/search_result_screen.dart'
+    as _i5;
 import 'package:french_stream_downloader/src/screens/result/uqvideos_result_screen.dart'
     as _i7;
 import 'package:french_stream_downloader/src/screens/splash/splash_screen.dart'
-    as _i5;
-import 'package:french_stream_downloader/src/screens/update/update_required_screen.dart'
     as _i6;
 import 'package:french_stream_downloader/src/screens/wishlist/wishlist_screen.dart'
     as _i8;
 
 /// generated route for
-/// [_i1.DownloadsScreen]
+/// [_i1.BackgroundDownloadsScreen]
+class BackgroundDownloadsRoute extends _i9.PageRouteInfo<void> {
+  const BackgroundDownloadsRoute({List<_i9.PageRouteInfo>? children})
+    : super(BackgroundDownloadsRoute.name, initialChildren: children);
+
+  static const String name = 'BackgroundDownloadsRoute';
+
+  static _i9.PageInfo page = _i9.PageInfo(
+    name,
+    builder: (data) {
+      return const _i1.BackgroundDownloadsScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i2.DownloadsScreen]
 class DownloadsRoute extends _i9.PageRouteInfo<void> {
   const DownloadsRoute({List<_i9.PageRouteInfo>? children})
     : super(DownloadsRoute.name, initialChildren: children);
@@ -41,13 +57,13 @@ class DownloadsRoute extends _i9.PageRouteInfo<void> {
   static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i1.DownloadsScreen();
+      return const _i2.DownloadsScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i2.HomeScreen]
+/// [_i3.HomeScreen]
 class HomeRoute extends _i9.PageRouteInfo<void> {
   const HomeRoute({List<_i9.PageRouteInfo>? children})
     : super(HomeRoute.name, initialChildren: children);
@@ -57,13 +73,13 @@ class HomeRoute extends _i9.PageRouteInfo<void> {
   static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i2.HomeScreen();
+      return const _i3.HomeScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i3.MainWrapperScreen]
+/// [_i4.MainWrapperScreen]
 class MainWrapperRoute extends _i9.PageRouteInfo<void> {
   const MainWrapperRoute({List<_i9.PageRouteInfo>? children})
     : super(MainWrapperRoute.name, initialChildren: children);
@@ -73,13 +89,13 @@ class MainWrapperRoute extends _i9.PageRouteInfo<void> {
   static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i3.MainWrapperScreen();
+      return const _i4.MainWrapperScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.SearchResultScreen]
+/// [_i5.SearchResultScreen]
 class SearchResultRoute extends _i9.PageRouteInfo<SearchResultRouteArgs> {
   SearchResultRoute({
     _i10.Key? key,
@@ -97,7 +113,7 @@ class SearchResultRoute extends _i9.PageRouteInfo<SearchResultRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<SearchResultRouteArgs>();
-      return _i4.SearchResultScreen(key: args.key, query: args.query);
+      return _i5.SearchResultScreen(key: args.key, query: args.query);
     },
   );
 }
@@ -126,7 +142,7 @@ class SearchResultRouteArgs {
 }
 
 /// generated route for
-/// [_i5.SplashScreen]
+/// [_i6.SplashScreen]
 class SplashRoute extends _i9.PageRouteInfo<void> {
   const SplashRoute({List<_i9.PageRouteInfo>? children})
     : super(SplashRoute.name, initialChildren: children);
@@ -136,59 +152,9 @@ class SplashRoute extends _i9.PageRouteInfo<void> {
   static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i5.SplashScreen();
+      return const _i6.SplashScreen();
     },
   );
-}
-
-/// generated route for
-/// [_i6.UpdateRequiredScreen]
-class UpdateRequiredRoute extends _i9.PageRouteInfo<UpdateRequiredRouteArgs> {
-  UpdateRequiredRoute({
-    _i10.Key? key,
-    required String latestVersion,
-    List<_i9.PageRouteInfo>? children,
-  }) : super(
-         UpdateRequiredRoute.name,
-         args: UpdateRequiredRouteArgs(key: key, latestVersion: latestVersion),
-         initialChildren: children,
-       );
-
-  static const String name = 'UpdateRequiredRoute';
-
-  static _i9.PageInfo page = _i9.PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<UpdateRequiredRouteArgs>();
-      return _i6.UpdateRequiredScreen(
-        key: args.key,
-        latestVersion: args.latestVersion,
-      );
-    },
-  );
-}
-
-class UpdateRequiredRouteArgs {
-  const UpdateRequiredRouteArgs({this.key, required this.latestVersion});
-
-  final _i10.Key? key;
-
-  final String latestVersion;
-
-  @override
-  String toString() {
-    return 'UpdateRequiredRouteArgs{key: $key, latestVersion: $latestVersion}';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! UpdateRequiredRouteArgs) return false;
-    return key == other.key && latestVersion == other.latestVersion;
-  }
-
-  @override
-  int get hashCode => key.hashCode ^ latestVersion.hashCode;
 }
 
 /// generated route for

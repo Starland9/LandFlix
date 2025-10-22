@@ -47,3 +47,5 @@ app.*.map.json
 .env
 
 whatsapp_message.txt
+
+android/.kotlin/

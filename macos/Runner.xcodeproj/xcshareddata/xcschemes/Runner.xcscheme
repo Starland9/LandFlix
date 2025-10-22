@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               Bluedev.logIdentifier = "33CC10EC2044A3C60003C045"
+               BlueprintIdentifier = "33CC10EC2044A3C60003C045"
                BuildableName = "french_stream_downloader.app"
-               Bluedev.logName = "Runner"
+               BlueprintName = "Runner"
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -30,9 +30,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            Bluedev.logIdentifier = "33CC10EC2044A3C60003C045"
+            BlueprintIdentifier = "33CC10EC2044A3C60003C045"
             BuildableName = "french_stream_downloader.app"
-            Bluedev.logName = "Runner"
+            BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -42,9 +42,9 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               Bluedev.logIdentifier = "331C80D4294CF70F00263BE5"
+               BlueprintIdentifier = "331C80D4294CF70F00263BE5"
                BuildableName = "RunnerTests.xctest"
-               Bluedev.logName = "RunnerTests"
+               BlueprintName = "RunnerTests"
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -65,9 +65,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            Bluedev.logIdentifier = "33CC10EC2044A3C60003C045"
+            BlueprintIdentifier = "33CC10EC2044A3C60003C045"
             BuildableName = "french_stream_downloader.app"
-            Bluedev.logName = "Runner"
+            BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -82,9 +82,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            Bluedev.logIdentifier = "33CC10EC2044A3C60003C045"
+            BlueprintIdentifier = "33CC10EC2044A3C60003C045"
             BuildableName = "french_stream_downloader.app"
-            Bluedev.logName = "Runner"
+            BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
