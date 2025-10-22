@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
 import 'package:french_stream_downloader/src/logic/services/app_infos_service.dart';
+import 'package:french_stream_downloader/src/logic/services/version_check_service.dart';
 
 @RoutePage()
 class SplashScreen extends StatefulWidget {
@@ -87,8 +88,31 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 200));
     _progressController.forward();
 
-    // Attendre la fin des animations puis naviguer
+    // Vérifier la version en parallèle des animations
+    final versionCheckFuture = VersionCheckService().isUpdateAvailable();
+
+    // Attendre la fin des animations
     await Future.delayed(const Duration(milliseconds: 2500));
+
+    if (!mounted) return;
+
+    // Vérifier si une mise à jour est nécessaire
+    final updateAvailable = await versionCheckFuture;
+
+    if (updateAvailable) {
+      // Récupérer la dernière version
+      final latestVersion = await VersionCheckService().getLatestVersion();
+
+      if (mounted && latestVersion != null) {
+        context.router.pushAndPopUntil(
+          UpdateRequiredRoute(latestVersion: latestVersion),
+          predicate: (route) => false,
+        );
+        return;
+      }
+    }
+
+    // Naviguer vers la page principale si pas de mise à jour
     if (mounted) {
       context.router.pushAndPopUntil(
         const MainWrapperRoute(),
