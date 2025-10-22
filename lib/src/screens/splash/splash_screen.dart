@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/services/app_infos_service.dart';
 
 @RoutePage()
 class SplashScreen extends StatefulWidget {
@@ -233,7 +234,7 @@ class _SplashScreenState extends State<SplashScreen>
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
-                                      "v1.0.0",
+                                      AppInfosService().version ?? "v1.0.0",
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
