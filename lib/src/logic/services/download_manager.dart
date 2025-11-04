@@ -33,7 +33,6 @@ class DownloadManager {
         .configure(
           globalConfig: [
             (bd.Config.requestTimeout, const Duration(seconds: 100)),
-            (bd.Config.runInForeground, bd.Config.whenRequired),
             (bd.Config.runInForegroundIfFileLargerThan, 10 * 1024 * 1024), // 10 MB
           ],
           androidConfig: [
