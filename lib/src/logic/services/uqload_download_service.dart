@@ -36,6 +36,7 @@ class UQLoadDownloadService {
         'Referer': '${uri.scheme}://${uri.host}',
       },
       metaData: details.htmlUrl, // Use the HTML URL as a unique identifier
+      displayName: details.videoInfo.title,
     );
 
     await bd.FileDownloader().enqueue(task);

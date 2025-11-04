@@ -86,58 +86,60 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
               children: [
-                // Icône de fichier vidéo
-                _buildLeadingIcon(),
-                const SizedBox(width: 16),
+                Row(
+                  children: [
+                    // Icône de fichier vidéo
+                    _buildLeadingIcon(),
+                    const SizedBox(width: 16),
 
-                // Informations de la vidéo
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.uqvideo.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-
-                      Row(
+                    // Informations de la vidéo
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Badge de taille
-                          _buildSizeBadge(context),
-                          const SizedBox(width: 8),
-                          // Badge de qualité
-                          _buildExtensionBadge(context),
-                          // Badge "Téléchargé" si déjà téléchargé
-                          if (_isAlreadyDownloaded) ...[
-                            const SizedBox(width: 8),
-                            const DownloadedBadge(),
-                          ],
+                          Text(
+                            widget.uqvideo.title,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              // Badge de taille
+                              _buildSizeBadge(context),
+                              // Badge de qualité
+                              _buildExtensionBadge(context),
+                              // Badge "Téléchargé" si déjà téléchargé
+                              if (_isAlreadyDownloaded)
+                                const DownloadedBadge(),
+                            ],
+                          ),
                         ],
                       ),
-
-                      // Barre de progression si en téléchargement
-                      _buildProgressBar(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
 
-                const SizedBox(width: 16),
-                // Bouton d'action
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+                // Barre de progression si en téléchargement
+                _buildProgressBar(),
+
+                // Boutons d'action en bas
+                const SizedBox(height: 12),
+                Row(
                   children: [
-                    _buildWishlistButton(),
-                    const SizedBox(height: 12),
-                    _buildDownloadButton(),
+                    Expanded(child: _buildWishlistButton()),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildDownloadButton()),
                   ],
                 ),
               ],
@@ -292,55 +294,57 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     return BlocBuilder<DownloadCubit, DownloadState>(
       builder: (context, state) {
         if (state is DownloadInProgress) {
-          return Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+          return ElevatedButton.icon(
+            onPressed: () => _downloadCubit.cancelDownload(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error.withValues(alpha: 0.15),
+              foregroundColor: AppColors.error,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
             ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () => _downloadCubit.cancelDownload(),
-              child: const Icon(
-                Icons.close_rounded,
+            icon: const Icon(Icons.close_rounded, size: 20),
+            label: Text(
+              'Annuler',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
                 color: AppColors.error,
-                size: 24,
               ),
             ),
           );
         }
 
-        return Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        return ElevatedButton.icon(
+          onPressed: isPreparing ? null : () => _startDownload(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryPurple,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            shadowColor: AppColors.primaryPurple.withValues(alpha: 0.3),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _startDownload(),
-            child: isPreparing
-                ? const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(
-                    Icons.download_rounded,
-                    color: Colors.white,
-                    size: 24,
+          icon: isPreparing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator.adaptive(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
+                )
+              : const Icon(Icons.download_rounded, size: 20),
+          label: Text(
+            isPreparing ? 'Préparation…' : 'Télécharger',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
         );
       },
@@ -352,31 +356,33 @@ class _UqvideoWidgetState extends State<UqvideoWidget> {
     final icon = _isInWishlist
         ? Icons.favorite_rounded
         : Icons.favorite_outline_rounded;
-    final color = _isInWishlist ? AppColors.primaryPurple : Colors.white;
+    final label = _isInWishlist ? 'Ma liste' : 'Ajouter';
 
-    return Tooltip(
-      message: _isInWishlist ? 'Retirer de ma liste' : 'Ajouter à ma liste',
-      child: InkWell(
-        onTap: isDisabled ? null : _toggleWishlist,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.darkSurfaceVariant.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _isInWishlist
-                  ? AppColors.primaryPurple.withValues(alpha: 0.4)
-                  : AppColors.darkSurfaceVariant.withValues(alpha: 0.4),
-            ),
-          ),
-          child: isDisabled
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2.4),
-                )
-              : Icon(icon, color: color, size: 24),
+    return OutlinedButton.icon(
+      onPressed: isDisabled ? null : _toggleWishlist,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: _isInWishlist ? AppColors.primaryPurple : AppColors.textSecondary,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        side: BorderSide(
+          color: _isInWishlist
+              ? AppColors.primaryPurple.withValues(alpha: 0.4)
+              : AppColors.darkSurfaceVariant.withValues(alpha: 0.4),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      icon: isDisabled
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+            )
+          : Icon(icon, size: 20),
+      label: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
