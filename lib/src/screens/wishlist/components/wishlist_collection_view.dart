@@ -56,6 +56,11 @@ class _WishlistCard extends StatelessWidget {
   final VoidCallback onDownload;
   final VoidCallback? onOpen;
 
+  // Thumbnail constants
+  static const double _thumbnailWidth = 80.0;
+  static const double _thumbnailAspectRatio = 2 / 3;
+  static const double _thumbnailHeight = _thumbnailWidth / _thumbnailAspectRatio;
+
   const _WishlistCard({
     required this.item,
     required this.isDownloaded,
@@ -166,16 +171,13 @@ class _WishlistCard extends StatelessWidget {
   }
 
   Widget _buildThumbnail(BuildContext context) {
-    const thumbnailWidth = 80.0;
-    const aspectRatio = 2 / 3;
-    
     if (item.imageUrl != null && item.imageUrl!.isNotEmpty) {
       return SizedBox(
-        width: thumbnailWidth,
+        width: _thumbnailWidth,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: AspectRatio(
-            aspectRatio: aspectRatio,
+            aspectRatio: _thumbnailAspectRatio,
             child: Image.network(
               item.imageUrl!,
               fit: BoxFit.cover,
@@ -189,13 +191,9 @@ class _WishlistCard extends StatelessWidget {
   }
 
   Widget _thumbnailFallback() {
-    const thumbnailWidth = 80.0;
-    const aspectRatio = 2 / 3;
-    const thumbnailHeight = thumbnailWidth / aspectRatio; // 120.0
-    
     return Container(
-      width: thumbnailWidth,
-      height: thumbnailHeight,
+      width: _thumbnailWidth,
+      height: _thumbnailHeight,
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(10),
