@@ -33,8 +33,12 @@ class DownloadManager {
         .configure(
           globalConfig: [
             (bd.Config.requestTimeout, const Duration(seconds: 100)),
+            (bd.Config.runInForegroundIfFileLargerThan, 10 * 1024 * 1024), // 10 MB
           ],
-          androidConfig: [(bd.Config.useCacheDir, bd.Config.never)],
+          androidConfig: [
+            (bd.Config.useCacheDir, bd.Config.never),
+            (bd.Config.runInForeground, bd.Config.always),
+          ],
           iOSConfig: [
             (bd.Config.localize, {'Cancel': 'Annuler', 'Pause': 'Pause'}),
           ],
