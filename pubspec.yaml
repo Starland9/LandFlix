@@ -47,6 +47,7 @@ dependencies:
   uqload_downloader_dart: ^1.0.2
   background_downloader: ^9.2.6
   package_info_plus: ^9.0.0
+  flutter_local_notifications: ^19.5.0
 
 dev_dependencies:
   flutter_test:
