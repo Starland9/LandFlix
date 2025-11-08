@@ -7,6 +7,7 @@ import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart';
 import 'package:french_stream_downloader/src/logic/models/download_item.dart';
 import 'package:french_stream_downloader/src/logic/services/download_stream_service.dart';
+import 'package:french_stream_downloader/src/logic/services/notification_service.dart';
 import 'package:french_stream_downloader/src/logic/services/uqload_download_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uqload_downloader_dart/uqload_downloader_dart.dart';
@@ -28,6 +29,9 @@ class DownloadManager {
 
   /// Initialise le gestionnaire en chargeant les données
   Future<void> initialize() async {
+    // Initialiser le service de notifications
+    await NotificationService.instance.initialize();
+
     // Configure FileDownloader pour autoriser plusieurs téléchargements simultanés
     bd.FileDownloader()
         .configure(
@@ -245,9 +249,47 @@ class DownloadManager {
 
         if (url.isEmpty) return;
 
-        if (update is bd.TaskStatusUpdate &&
-            update.status == bd.TaskStatus.complete) {
-          await _handleTaskCompleted(task, url);
+        final notificationId = NotificationService.instance.getNotificationIdFromUrl(url);
+
+        // Gestion des mises à jour de progression
+        if (update is bd.TaskProgressUpdate) {
+          final progress = update.progress;
+          final progressInt = (progress * 100).toInt();
+          
+          await NotificationService.instance.showDownloadProgress(
+            notificationId: notificationId,
+            title: 'Téléchargement',
+            filename: task.filename,
+            progress: progressInt,
+            maxProgress: 100,
+          );
+        }
+
+        // Gestion des changements de statut
+        if (update is bd.TaskStatusUpdate) {
+          if (update.status == bd.TaskStatus.complete) {
+            await _handleTaskCompleted(task, url);
+            
+            // Notification de succès
+            await NotificationService.instance.showDownloadComplete(
+              notificationId: notificationId,
+              title: 'Téléchargement terminé',
+              filename: task.filename,
+              filePath: _resolveFilePath(task),
+            );
+          } else if (update.status == bd.TaskStatus.failed ||
+              update.status == bd.TaskStatus.notFound) {
+            // Notification d'erreur
+            await NotificationService.instance.showDownloadError(
+              notificationId: notificationId,
+              title: 'Téléchargement échoué',
+              filename: task.filename,
+              errorMessage: update.exception?.toString(),
+            );
+          } else if (update.status == bd.TaskStatus.canceled) {
+            // Annuler la notification en cas d'annulation
+            await NotificationService.instance.cancelNotification(notificationId);
+          }
         }
       },
       onError: (error, stack) => dev.log(
