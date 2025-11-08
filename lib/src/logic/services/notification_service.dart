@@ -3,7 +3,6 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Service de gestion des notifications pour les téléchargements
 /// Affiche des notifications de progression similaires à Google Chrome
