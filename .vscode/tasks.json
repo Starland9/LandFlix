@@ -20,6 +20,7 @@
 			"args": [
 				"build",
 				"apk",
+				"--release",
 				"--dart-define-from-file",
 				".env"
 			],

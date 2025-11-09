@@ -18,9 +18,23 @@ jobs:
     runs-on: ubuntu-latest
     env:
       API_URL: ${{ secrets.API_URL }}
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+
+      - name: Set up Android signing
+        run: |
+          echo "${ANDROID_KEYSTORE_BASE64}" | base64 --decode > android/app/landflix_release_key.jks
+          cat <<EOF > android/key.properties
+          storePassword=${ANDROID_KEYSTORE_PASSWORD}
+          keyPassword=${ANDROID_KEY_PASSWORD}
+          keyAlias=${ANDROID_KEY_ALIAS}
+          storeFile=landflix_release_key.jks
+          EOF
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
