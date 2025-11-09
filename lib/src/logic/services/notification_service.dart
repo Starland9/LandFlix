@@ -13,7 +13,8 @@ class NotificationService {
       'Notifications de progression des téléchargements';
 
   static NotificationService? _instance;
-  static NotificationService get instance => _instance ??= NotificationService._();
+  static NotificationService get instance =>
+      _instance ??= NotificationService._();
 
   NotificationService._();
 
@@ -28,7 +29,9 @@ class NotificationService {
 
     try {
       // Configuration Android
-      const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/launcher_icon',
+      );
 
       // Configuration iOS/macOS
       const darwinSettings = DarwinInitializationSettings(
@@ -37,11 +40,25 @@ class NotificationService {
         requestSoundPermission: false,
       );
 
+      // Configuration Linux
+      const linuxSettings = LinuxInitializationSettings(
+        defaultActionName: 'Ouvrir',
+      );
+
+      // Configuration Windows
+      const windowsSettings = WindowsInitializationSettings(
+        appName: 'LandFlix',
+        appUserModelId: 'com.landflix.app',
+        guid: '12345678-1234-1234-1234-123456789012',
+      );
+
       // Configuration globale
       const initSettings = InitializationSettings(
         android: androidSettings,
         iOS: darwinSettings,
         macOS: darwinSettings,
+        linux: linuxSettings,
+        windows: windowsSettings,
       );
 
       await _notifications.initialize(
@@ -72,9 +89,10 @@ class NotificationService {
 
   /// Demande les permissions de notification sur Android
   Future<void> _requestAndroidPermissions() async {
-    final androidImplementation =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidImplementation = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidImplementation != null) {
       await androidImplementation.requestNotificationsPermission();
@@ -83,9 +101,10 @@ class NotificationService {
 
   /// Demande les permissions de notification sur iOS/macOS
   Future<void> _requestDarwinPermissions() async {
-    final darwinImplementation =
-        _notifications.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
+    final darwinImplementation = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
 
     if (darwinImplementation != null) {
       await darwinImplementation.requestPermissions(
@@ -95,9 +114,10 @@ class NotificationService {
       );
     }
 
-    final macosImplementation =
-        _notifications.resolvePlatformSpecificImplementation<
-            MacOSFlutterLocalNotificationsPlugin>();
+    final macosImplementation = _notifications
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >();
 
     if (macosImplementation != null) {
       await macosImplementation.requestPermissions(
@@ -123,12 +143,22 @@ class NotificationService {
     required int progress,
     required int maxProgress,
   }) async {
+    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      return;
+    }
+
     if (!_initialized) {
-      dev.log('NotificationService non initialisé, tentative d\'initialisation...');
+      dev.log(
+        'NotificationService non initialisé, tentative d\'initialisation...',
+      );
       await initialize();
     }
 
     try {
+      final progressPercent = maxProgress > 0
+          ? ((progress / maxProgress) * 100).toInt()
+          : 0;
+
       final androidDetails = AndroidNotificationDetails(
         _channelId,
         _channelName,
@@ -159,10 +189,6 @@ class NotificationService {
         macOS: darwinDetails,
       );
 
-      final progressPercent = maxProgress > 0
-          ? ((progress / maxProgress) * 100).toInt()
-          : 0;
-
       await _notifications.show(
         notificationId,
         title,
@@ -187,12 +213,14 @@ class NotificationService {
     String? filePath,
   }) async {
     if (!_initialized) {
-      dev.log('NotificationService non initialisé, tentative d\'initialisation...');
+      dev.log(
+        'NotificationService non initialisé, tentative d\'initialisation...',
+      );
       await initialize();
     }
 
     try {
-      final androidDetails = AndroidNotificationDetails(
+      final androidDetails = const AndroidNotificationDetails(
         _channelId,
         _channelName,
         channelDescription: _channelDescription,
@@ -212,10 +240,25 @@ class NotificationService {
         presentSound: true,
       );
 
+      const linuxDetails = LinuxNotificationDetails(
+        urgency: LinuxNotificationUrgency.normal,
+        actions: [
+          LinuxNotificationAction(key: 'open_file', label: 'Ouvrir le fichier'),
+          LinuxNotificationAction(
+            key: 'open_downloads',
+            label: 'Ouvrir les téléchargements',
+          ),
+        ],
+      );
+
+      const windowsDetails = WindowsNotificationDetails();
+
       final notificationDetails = NotificationDetails(
         android: androidDetails,
         iOS: darwinDetails,
         macOS: darwinDetails,
+        linux: linuxDetails,
+        windows: windowsDetails,
       );
 
       await _notifications.show(
@@ -242,12 +285,14 @@ class NotificationService {
     String? errorMessage,
   }) async {
     if (!_initialized) {
-      dev.log('NotificationService non initialisé, tentative d\'initialisation...');
+      dev.log(
+        'NotificationService non initialisé, tentative d\'initialisation...',
+      );
       await initialize();
     }
 
     try {
-      final androidDetails = AndroidNotificationDetails(
+      final androidDetails = const AndroidNotificationDetails(
         _channelId,
         _channelName,
         channelDescription: _channelDescription,
@@ -267,10 +312,24 @@ class NotificationService {
         presentSound: true,
       );
 
+      const linuxDetails = LinuxNotificationDetails(
+        urgency: LinuxNotificationUrgency.critical,
+        actions: [
+          LinuxNotificationAction(
+            key: 'open_downloads',
+            label: 'Ouvrir les téléchargements',
+          ),
+        ],
+      );
+
+      const windowsDetails = WindowsNotificationDetails();
+
       final notificationDetails = NotificationDetails(
         android: androidDetails,
         iOS: darwinDetails,
         macOS: darwinDetails,
+        linux: linuxDetails,
+        windows: windowsDetails,
       );
 
       final message = errorMessage != null
