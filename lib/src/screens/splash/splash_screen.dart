@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:french_stream_downloader/src/core/routing/app_router.gr.dart';
 import 'package:french_stream_downloader/src/core/themes/colors.dart';
+import 'package:french_stream_downloader/src/logic/services/app_infos_service.dart';
 import 'package:french_stream_downloader/src/logic/services/version_check_service.dart';
 
 @RoutePage()
@@ -247,27 +248,28 @@ class _SplashScreenState extends State<SplashScreen>
                                   const SizedBox(height: 8),
 
                                   // Version
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
+                                  if (AppInfosService().version != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: AppColors.primaryGradient,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        "v${AppInfosService().version!}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                            ),
+                                      ),
                                     ),
-                                    decoration: BoxDecoration(
-                                      gradient: AppColors.primaryGradient,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      "v1.0.0",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
